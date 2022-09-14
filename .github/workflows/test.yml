@@ -22,7 +22,7 @@ name: test
 
 # Workflow triggers:
 on:
-  comment:
+  issue_comment:
     types: [created]
 
 # Workflow jobs:
