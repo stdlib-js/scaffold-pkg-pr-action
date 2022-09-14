@@ -67,4 +67,4 @@ Input (cli): {{cli}}
 Input (jsdoc):
 {{jsdoc}}
 
-Output (repl.txt):
+Output (usage.txt):

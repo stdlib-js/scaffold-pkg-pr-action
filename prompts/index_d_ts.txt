@@ -21,7 +21,6 @@ Input (jsdoc):
 */
 
 Output (TS declaration file):
-
 /**
 * Returns a thunk.
 *

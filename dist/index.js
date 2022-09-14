@@ -233,7 +233,7 @@ async function main() {
                     ...OPENAI_SETTINGS
                 });
                 if (response.data && response.data.choices) {
-                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), txt);
                 }
             }
@@ -247,7 +247,7 @@ async function main() {
                     ...OPENAI_SETTINGS
                 });
                 if (response.data && response.data.choices) {
-                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'lib', 'index.js'), txt);
                 }
             }
@@ -261,7 +261,7 @@ async function main() {
                     ...OPENAI_SETTINGS
                 });
                 if (response.data && response.data.choices) {
-                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), txt);
                 }
             }
@@ -291,7 +291,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     ts = response?.data?.choices[0].text || '';
-                    const txt = LICENSE_TXT + '// TypeScript Version: 2.0\n' + ts;
+                    const txt = LICENSE_TXT + '\n// TypeScript Version: 2.0\n' + ts;
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'types', 'index.d.ts'), txt);
                 }
             }
@@ -350,7 +350,7 @@ async function main() {
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'bin', 'cli'), txt);
                     }
                 }
@@ -364,7 +364,7 @@ async function main() {
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.cli.js'), txt);
                     }
                 }
