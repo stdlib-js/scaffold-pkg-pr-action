@@ -21,7 +21,7 @@
 import { debug, getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 
@@ -121,6 +121,17 @@ async function main(): Promise<void> {
 		mkdirSync( pkgDir, {
 			'recursive': true
 		});
+		mkdirSync( join( pkgDir, 'benchmark' ) );
+		mkdirSync( join( pkgDir, 'docs' ) );
+		mkdirSync( join( pkgDir, 'docs', 'types' ) );
+		mkdirSync( join( pkgDir, 'examples' ) );
+		mkdirSync( join( pkgDir, 'lib' ) );
+		mkdirSync( join( pkgDir, 'test' ) );
+		
+		const pkgJSON = {
+			'name': `@stdlib/${path}`
+		};
+		writeFileSync( join( pkgDir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 ) );
 		break;
 	}
 	default:

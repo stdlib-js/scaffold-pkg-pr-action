@@ -35,8 +35,18 @@ jobs:
     steps:
       # Checkout the current branch:
       - uses: actions/checkout@v2
+
       # Run the command to scaffold a package:
       - name: Scaffold package
         uses: ./
         with:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      # Create a pull request:
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Scaffold package
+          title: Scaffold package
+          branch: scaffold/package

@@ -116,6 +116,16 @@ async function main() {
             (0, fs_1.mkdirSync)(pkgDir, {
                 'recursive': true
             });
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'benchmark'));
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'docs'));
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'docs', 'types'));
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'examples'));
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'lib'));
+            (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'test'));
+            const pkgJSON = {
+                'name': `@stdlib/${path}`
+            };
+            (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2));
             break;
         }
         default:
