@@ -196,7 +196,9 @@ async function main(): Promise<void> {
 			return;
 		}
 		debug( 'Found a JS code block, extract JSDoc...' );
+		debug( JSON.stringify( jsCode, null, 2 ) );
 		const jsdoc = RE_JSDOC_COMMENT.exec( jsCode[ 1 ] );
+		debug( JSON.stringify( jsdoc, null, 2 ) );
 		if ( jsdoc === null ) {
 			debug( 'No JSDoc comment found.' );
 			return;
