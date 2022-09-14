@@ -51,7 +51,7 @@ jobs:
           commit-message: Add `${{ steps.scaffold.outputs.alias }}`
           title: Add `${{ steps.scaffold.outputs.alias }}` package
           body: |
-            This PR adds the `${{ steps.scaffold.outputs.alias }}` package.
+            This PR adds the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package.
             
             ## Notes
             

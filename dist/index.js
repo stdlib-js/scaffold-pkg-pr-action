@@ -188,6 +188,7 @@ async function main() {
                 "keywords": []
             };
             (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
+            (0, core_1.setOutput)('dir', pkgDir);
             (0, core_1.setOutput)('path', path);
             (0, core_1.setOutput)('alias', alias);
             const jsCode = RE_JS.exec(github_1.context.payload.comment.body);

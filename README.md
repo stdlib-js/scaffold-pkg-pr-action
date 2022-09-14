@@ -122,6 +122,7 @@ jobs:
 ## Outputs
 
 -   `alias`: package alias.
+-   `dir`: package directory in the repository.
 -   `path`: package path.
 
 ## License

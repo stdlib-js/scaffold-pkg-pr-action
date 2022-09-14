@@ -194,6 +194,7 @@ async function main(): Promise<void> {
 			"keywords": []
 		};
 		writeFileSync( join( pkgDir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 )+'\n' );
+		setOutput( 'dir', pkgDir );
 		setOutput( 'path', path );
 		setOutput( 'alias', alias );
 		
