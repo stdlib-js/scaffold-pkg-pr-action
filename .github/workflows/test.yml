@@ -48,6 +48,6 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Add {{ steps.scaffold.outputs.alias }}
-          title: Add {{ steps.scaffold.outputs.alias }}
-          branch: {{ steps.scaffold.outputs.path }}
+          commit-message: Add ${{ steps.scaffold.outputs.alias }}
+          title: Add ${{ steps.scaffold.outputs.alias }}
+          branch: ${{ steps.scaffold.outputs.path }}
