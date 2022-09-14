@@ -318,7 +318,7 @@ async function main() {
                 try {
                     const USAGE_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'usage_txt.txt'), 'utf8');
                     const response = await openai.createCompletion({
-                        'prompt': USAGE_TXT_FILE.replace('{{input}}', jsCode[1]).replace('{{cli}}', cli),
+                        'prompt': USAGE_TXT_FILE.replace('{{jsdoc}}', jsCode[1]).replace('{{cli}}', cli),
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
@@ -346,7 +346,7 @@ async function main() {
                 try {
                     const CLI_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'cli.txt'), 'utf8');
                     const response = await openai.createCompletion({
-                        'prompt': CLI_FILE.replace('{{input}}', jsCode[1]),
+                        'prompt': CLI_FILE.replace('{{jsdoc}}', jsCode[1]),
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
@@ -360,7 +360,7 @@ async function main() {
                 try {
                     const TEST_CLI_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_cli_js.txt'), 'utf8');
                     const response = await openai.createCompletion({
-                        'prompt': TEST_CLI_JS_FILE.replace('{{input}}', jsCode[1]),
+                        'prompt': TEST_CLI_JS_FILE.replace('{{jsdoc}}', jsCode[1]),
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
