@@ -238,7 +238,7 @@ async function main(): Promise<void> {
 				...OPENAI_SETTINGS
 			});
 			if ( response.data && response.data.choices ) {
-				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 				writeFileSync( join( pkgDir, 'benchmark', 'benchmark.js' ), txt );
 			}
 		} catch ( err ) {
@@ -251,7 +251,7 @@ async function main(): Promise<void> {
 				...OPENAI_SETTINGS
 			});
 			if ( response.data && response.data.choices ) {
-				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 				writeFileSync( join( pkgDir, 'lib', 'index.js' ), txt );
 			}
 		} catch ( err ) {
@@ -264,7 +264,7 @@ async function main(): Promise<void> {
 				...OPENAI_SETTINGS
 			});
 			if ( response.data && response.data.choices ) {
-				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 				writeFileSync( join( pkgDir, 'test', 'test.js' ), txt );
 			}
 		} catch ( err ) {
@@ -292,7 +292,7 @@ async function main(): Promise<void> {
 			});
 			if ( response.data && response.data.choices ) {
 				ts = response?.data?.choices[ 0 ].text || '';
-				const txt = LICENSE_TXT + '// TypeScript Version: 2.0\n' + ts;			
+				const txt = LICENSE_TXT + '\n// TypeScript Version: 2.0\n' + ts;			
 				writeFileSync( join( pkgDir, 'docs', 'types', 'index.d.ts' ), txt );
 			}
 		} catch ( err ) {
@@ -348,7 +348,7 @@ async function main(): Promise<void> {
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+					const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 					writeFileSync( join( pkgDir, 'bin', 'cli' ), txt );
 				}
 			} catch ( err ) {
@@ -361,7 +361,7 @@ async function main(): Promise<void> {
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+					const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 					writeFileSync( join( pkgDir, 'test', 'test.cli.js' ), txt );
 				}
 			} catch ( err ) {

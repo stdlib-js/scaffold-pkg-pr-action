@@ -26,6 +26,50 @@ limitations under the License.
 
 ---
 
+## Description
+
+This action creates a pull request with with a scaffolded package based off a comment. The comment should be of the form:
+
+````md
+```yaml
+action: scaffold
+alias: <alias>
+path: <path>
+cli: <cli>
+```
+
+```js
+<jsdoc>
+```
+````
+
+where `<alias>` is the package alias, `<path>` is the package path, and `<cli>` is an optional CLI command that the package should support. `<jsdoc>` should be a JSDoc comment containing the JSDoc comment for the main export of the package and all its other exports. For example,
+
+````md
+```yaml
+action: scaffold
+alias: erf
+path: math/base/special/erf
+```
+
+```js
+/**
+* Evaluates the error function.
+* 
+* @param {number} x - input value
+* @returns {number} function value
+* 
+* @example
+* var v = erf( 2.0 );
+* // returns ~0.9953
+*
+* @example
+* var v = erf( NaN );
+* // returns NaN
+*/
+```
+````
+
 ## Example Workflow
 
 ```yml
@@ -70,25 +114,6 @@ jobs:
             *   :warning: The package was scaffolded using the stdlib bot, which uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
           branch: ${{ steps.scaffold.outputs.path }}
 ```
-
-## Description
-
-This action creates a pull request with with a scaffolded package based off a comment. The comment should be of the form:
-
-````md
-```yaml
-action: scaffold
-alias: <alias>
-path: <path>
-cli: <cli>
-```
-
-```js
-<jsdoc>
-```
-````
-
-where `<alias>` is the package alias, `<path>` is the package path, and `<cli>` is an optional CLI command that the package should support. `<jsdoc>` should be a JSDoc comment containing the JSDoc comment for the main export of the package and all its other exports.
 
 ## Inputs
 
