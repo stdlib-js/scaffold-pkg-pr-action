@@ -21,6 +21,7 @@
 import { debug, getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 
@@ -112,6 +113,14 @@ async function main(): Promise<void> {
 		}
 		const { path, alias, cli } = yaml;
 		debug( `Scaffolding package: ${path} (${alias}) ${cli ? 'with CLI' : 'without CLI'}` );
+		const pkgDir = join( workDir, 'lib', 'node_modules', '@stdlib', path );
+		debug( 'Package directory: '+pkgDir );
+		if ( existsSync( pkgDir ) ) {
+			setFailed( 'Package directory already exists.' );
+		}
+		mkdirSync( pkgDir, {
+			'recursive': true
+		});
 		break;
 	}
 	default:

@@ -24,6 +24,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const path_1 = require("path");
+const fs_1 = require("fs");
 const yaml_1 = require("yaml");
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
 // VARIABLES //
@@ -107,6 +108,14 @@ async function main() {
             }
             const { path, alias, cli } = yaml;
             (0, core_1.debug)(`Scaffolding package: ${path} (${alias}) ${cli ? 'with CLI' : 'without CLI'}`);
+            const pkgDir = (0, path_1.join)(workDir, 'lib', 'node_modules', '@stdlib', path);
+            (0, core_1.debug)('Package directory: ' + pkgDir);
+            if ((0, fs_1.existsSync)(pkgDir)) {
+                (0, core_1.setFailed)('Package directory already exists.');
+            }
+            (0, fs_1.mkdirSync)(pkgDir, {
+                'recursive': true
+            });
             break;
         }
         default:
