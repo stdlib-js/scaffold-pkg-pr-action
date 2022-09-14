@@ -196,8 +196,10 @@ async function main(): Promise<void> {
 		}
 		debug( 'Found a JS code block...' );
 		try {
+			const prompt = EXAMPLES_JS_FILE.replace( '{{input}}', jsCode[ 1 ] );
+			debug( 'Prompt: '+prompt );
 			const response = await openai.createCompletion({
-				'prompt': EXAMPLES_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				'prompt': prompt,
 				...OPENAI_SETTINGS
 			});
 			if ( response.data && response.data.choices ) {
