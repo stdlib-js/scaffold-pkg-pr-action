@@ -42,7 +42,7 @@ async function main() {
                 (0, core_1.debug)('No YAML code block found.');
                 return;
             }
-            (0, core_1.debug)('Found a YAML code block.');
+            (0, core_1.debug)('Found a YAML code block: ' + matches[1]);
             const yaml = (0, yaml_1.parse)(matches[1]);
             if (yaml.action !== 'scaffold') {
                 (0, core_1.debug)('Not a scaffold command.');

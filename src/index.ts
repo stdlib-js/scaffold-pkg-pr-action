@@ -49,7 +49,7 @@ async function main(): Promise<void> {
 			debug( 'No YAML code block found.' );
 			return;
 		}
-		debug( 'Found a YAML code block.' );
+		debug( 'Found a YAML code block: '+matches[ 1 ] );
 		const yaml = parse( matches[ 1 ] );
 		if ( yaml.action !== 'scaffold' ) {
 			debug( 'Not a scaffold command.' );
