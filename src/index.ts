@@ -22,7 +22,7 @@ import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { context } from '@actions/github';
 import { join } from 'path';
 import { Configuration, OpenAIApi } from 'openai';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 
@@ -32,7 +32,6 @@ import currentYear from '@stdlib/time-current-year';
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
-const EXAMPLES_JS_FILE = join( PROMPTS_DIR, 'examples_js.txt' );
 const OPENAI_SETTINGS = {
 	'model': 'code-davinci-002',
 	'temperature': 0.7,
@@ -196,6 +195,7 @@ async function main(): Promise<void> {
 		}
 		debug( 'Found a JS code block...' );
 		try {
+			const EXAMPLES_JS_FILE = readFileSync( join( PROMPTS_DIR, 'examples_js.txt' ), 'utf8' );
 			const prompt = EXAMPLES_JS_FILE.replace( '{{input}}', jsCode[ 1 ] );
 			debug( 'Prompt: '+prompt );
 			const response = await openai.createCompletion({
