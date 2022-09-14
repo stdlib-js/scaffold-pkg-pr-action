@@ -38,7 +38,74 @@ Output (repl.txt):
 
     See Also
     --------
-    
+
+Input (jsdoc):
+/**
+* Removes and returns the last element of a collection.
+*
+* @param {(Array|TypedArray|Object)} collection - collection
+* @throws {TypeError} must provide either an array, typed array, or an array-like object
+* @returns {Array} updated collection and the removed element
+*
+* @example
+* var arr = [ 1.0, 2.0, 3.0, 4.0, 5.0 ];
+*
+* var out = pop( arr );
+* // returns [ [ 1.0, 2.0, 3.0, 4.0 ], 5.0 ]
+*
+* @example
+* var Float64Array = require( '@stdlib/array/float64' );
+* var arr = new Float64Array( [ 1.0, 2.0, 3.0, 4.0, 5.0 ] );
+* // returns <Float64Array>[ 1.0, 2.0, 3.0, 4.0, 5.0 ]
+*
+* var out = pop( arr );
+* // returns [ <Float64Array>[ 1.0, 2.0, 3.0, 4.0 ], 5.0 ]
+*/
+
+Output (repl.txt):
+{{alias}}( collection )
+    Removes and returns the last element of a collection.
+
+    The function returns an array with two elements: the shortened collection
+    and the removed element.
+
+    If the input collection is a typed array whose length is greater than `0`,
+    the first return value does not equal the input reference.
+
+    For purposes of generality, always treat the output collection as distinct
+    from the input collection.
+
+    Parameters
+    ----------
+    collection: Array|TypedArray|Object
+        A collection. If the collection is an `Object`, the value should be
+        array-like.
+
+    Returns
+    -------
+    out: Array
+        Updated collection and the removed item.
+
+    Examples
+    --------
+    // Arrays:
+    > var arr = [ 1.0, 2.0, 3.0, 4.0, 5.0 ];
+    > var out = {{alias}}( arr )
+    [ [ 1.0, 2.0, 3.0, 4.0 ], 5.0 ]
+
+    // Typed arrays:
+    > arr = new {{alias:@stdlib/array/float64}}( [ 1.0, 2.0 ] );
+    > out = {{alias}}( arr )
+    [ <Float64Array>[ 1.0 ], 2.0 ]
+
+    // Array-like object:
+    > arr = { 'length': 2, '0': 1.0, '1': 2.0 };
+    > out = {{alias}}( arr )
+    [ { 'length': 1, '0': 1.0 }, 2.0 ]
+
+    See Also
+    --------
+
 Input (jsdoc):
 {{input}}
 
