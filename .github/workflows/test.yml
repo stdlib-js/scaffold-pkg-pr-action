@@ -55,5 +55,5 @@ jobs:
             
             ## Notes
             
-            *   The package was scaffolded using the stdlib scaffolding bot, which uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing.
+            *   :warning: The package was scaffolded using the stdlib bot, which uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
           branch: ${{ steps.scaffold.outputs.path }}

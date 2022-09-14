@@ -1,0 +1,78 @@
+Input (jsdoc): 
+/**
+* Pads a string such that the padded string has a length of `len`.
+*
+* @param {string} str - string to pad
+* @param {NonNegativeInteger} len - string length
+* @param {Options} [options] - function options
+* @param {string} [options.lpad=''] - string used to left pad
+* @param {string} [options.rpad=' '] - string used to right pad
+* @param {boolean} [options.centerRight=false] - boolean indicating whether to center right in the event of a tie
+* @throws {TypeError} first argument must be a string
+* @throws {TypeError} second argument must be a nonnegative integer
+* @throws {TypeError} options argument must be an object
+* @throws {TypeError} must provide valid options
+* @throws {RangeError} at least one padding must have a length greater than `0`
+* @returns {string} padded string
+*
+* @example
+* var str = pad( 'a', 5 );
+* // returns 'a    '
+*
+* @example
+* var str = pad( 'a', 10, {
+*     'lpad': 'b'
+* });
+* // returns 'bbbbbbbbba'
+*
+* @example
+* var str = pad( 'a', 12, {
+*     'rpad': 'b'
+* });
+* // returns 'abbbbbbbbbbb'
+*
+* @example
+* var opts = {
+*     'lpad': 'a',
+*     'rpad': 'c'
+* };
+* var str = pad( 'b', 10, opts );
+* // returns 'aaaabccccc'
+*
+* @example
+* var opts = {
+*     'lpad': 'a',
+*     'rpad': 'c',
+*     'centerRight': true
+* };
+* var str = pad( 'b', 10, opts );
+* // returns 'aaaaabcccc'
+*/
+
+Output (cli_opts.json):
+{
+	"boolean": [
+		"help",
+		"version",
+		"cright"
+	],
+	"string": [
+		"len",
+		"lpad",
+		"rpad",
+		"split"
+	],
+	"alias": {
+		"help": [
+			"h"
+		],
+		"version": [
+			"V"
+		]
+	}
+}
+
+Input (jsdoc):
+{{jsdoc}}
+
+Output (cli_opts.json):

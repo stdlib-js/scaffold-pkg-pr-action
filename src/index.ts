@@ -131,6 +131,10 @@ async function main(): Promise<void> {
 		mkdirSync( join( pkgDir, 'examples' ) );
 		mkdirSync( join( pkgDir, 'lib' ) );
 		mkdirSync( join( pkgDir, 'test' ) );
+		if ( cli ) {
+			mkdirSync( join( pkgDir, 'bin' ) );
+			mkdirSync( join( pkgDir, 'etc' ) );
+		}
 		
 		const pkgJSON = {
 			'name': `@stdlib/${path}`,
@@ -147,6 +151,11 @@ async function main(): Promise<void> {
 					"url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
 				}
 			],
+			...( cli ? {
+				"bin": {
+					[cli]: "./bin/cli"
+				}			
+			} : {} ),
 			"main": "./lib",
 			"directories": {
 				"benchmark": "./benchmark",
@@ -302,6 +311,62 @@ async function main(): Promise<void> {
 			}
 		} catch ( err ) {
 			setFailed( err.message );
+		}
+		
+		if ( cli ) {
+			// Case: Package contains a CLI:
+			try {
+				const USAGE_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'usage_txt.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					'prompt': USAGE_TXT_FILE.replace( '{{input}}', jsCode[ 1 ] ).replace( '{{cli}}', cli ),
+					...OPENAI_SETTINGS
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = response?.data?.choices[ 0 ].text || '';
+					writeFileSync( join( pkgDir, 'docs', 'usage.txt' ), txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
+			try {
+				const CLI_OPTS_JSON_FILE = readFileSync( join( PROMPTS_DIR, 'cli_opts_json.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					'prompt': CLI_OPTS_JSON_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ),
+					...OPENAI_SETTINGS
+				});
+				if ( response.data && response.data.choices ) {
+					const json = response?.data?.choices[ 0 ].text || '';
+					writeFileSync( join( pkgDir, 'etc', 'cli_opts.json' ), json );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
+			try {
+				const CLI_FILE = readFileSync( join( PROMPTS_DIR, 'cli.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					'prompt': CLI_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+					...OPENAI_SETTINGS
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+					writeFileSync( join( pkgDir, 'bin', 'cli' ), txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
+			try {
+				const TEST_CLI_JS_FILE = readFileSync( join( PROMPTS_DIR, 'test_cli_js.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					'prompt': TEST_CLI_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+					...OPENAI_SETTINGS
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+					writeFileSync( join( pkgDir, 'test', 'test.cli.js' ), txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
 		}
 		break;
 	}

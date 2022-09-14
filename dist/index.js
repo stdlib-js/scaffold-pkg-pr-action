@@ -126,6 +126,10 @@ async function main() {
             (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'examples'));
             (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'lib'));
             (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'test'));
+            if (cli) {
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'bin'));
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'etc'));
+            }
             const pkgJSON = {
                 'name': `@stdlib/${path}`,
                 "version": "0.0.0",
@@ -141,6 +145,11 @@ async function main() {
                         "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
                     }
                 ],
+                ...(cli ? {
+                    "bin": {
+                        [cli]: "./bin/cli"
+                    }
+                } : {}),
                 "main": "./lib",
                 "directories": {
                     "benchmark": "./benchmark",
@@ -303,6 +312,65 @@ async function main() {
             }
             catch (err) {
                 (0, core_1.setFailed)(err.message);
+            }
+            if (cli) {
+                // Case: Package contains a CLI:
+                try {
+                    const USAGE_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'usage_txt.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': USAGE_TXT_FILE.replace('{{input}}', jsCode[1]).replace('{{cli}}', cli),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'usage.txt'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+                try {
+                    const CLI_OPTS_JSON_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'cli_opts_json.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': CLI_OPTS_JSON_FILE.replace('{{jsdoc}}', jsCode[1]),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const json = response?.data?.choices[0].text || '';
+                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'etc', 'cli_opts.json'), json);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+                try {
+                    const CLI_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'cli.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': CLI_FILE.replace('{{input}}', jsCode[1]),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'bin', 'cli'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+                try {
+                    const TEST_CLI_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_cli_js.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': TEST_CLI_JS_FILE.replace('{{input}}', jsCode[1]),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.cli.js'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
             }
             break;
         }
