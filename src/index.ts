@@ -21,6 +21,7 @@
 import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { context } from '@actions/github';
 import { join } from 'path';
+import { Configuration, OpenAIApi } from 'openai';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
@@ -32,6 +33,7 @@ const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const RE_JSDOC_COMMENT = /\/\*\*([\s\S]+?)\*\//;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
+const EXAMPLES_JS_FILE = join( PROMPTS_DIR, 'examples_js.txt' );
 const OPENAI_SETTINGS = {
 	'model': 'code-davinci-002',
 	'temperature': 0.7,
@@ -88,9 +90,13 @@ limitations under the License.
 * @returns {Promise<void>} promise indicating completion
 */ 
 async function main(): Promise<void> {
-	const openapi = getInput( 'OPENAI_API_KEY', { 
+	const OPENAI_API_KEY = getInput( 'OPENAI_API_KEY', { 
 		required: true 
 	});
+	const configuration = new Configuration({
+		'apiKey': OPENAI_API_KEY
+	});
+	const openai = new OpenAIApi( configuration );
 	const workDir = join( process.env.GITHUB_WORKSPACE );
 	debug( 'Working directory: '+workDir );
 	debug( 'Prompts directory: '+PROMPTS_DIR );
@@ -180,9 +186,33 @@ async function main(): Promise<void> {
 			],
 			"keywords": []
 		};
-		writeFileSync( join( pkgDir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 ) );
+		writeFileSync( join( pkgDir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 )+'\n' );
 		setOutput( 'path', path );
 		setOutput( 'alias', alias );
+		
+		const jsCode = RE_JS.exec( context.payload.comment.body );
+		if ( jsCode === null ) {
+			debug( 'No JS code block found.' );
+			return;
+		}
+		debug( 'Found a JS code block, extract JSDoc...' );
+		const jsdoc = RE_JSDOC_COMMENT.exec( jsCode[ 1 ] );
+		if ( jsdoc === null ) {
+			debug( 'No JSDoc comment found.' );
+			return;
+		}
+		try {
+			const response = await openai.createCompletion({
+				'prompt': EXAMPLES_JS_FILE.replace( '{{input}}', jsdoc[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = LICENSE_TXT + '\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
+				writeFileSync( join( pkgDir, 'examples', 'index.js' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
 		break;
 	}
 	default:

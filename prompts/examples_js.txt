@@ -1,0 +1,30 @@
+Input (jsdoc):
+/**
+* Capitalizes the first character in a string.
+*
+* @param {string} str - input string
+* @throws {TypeError} must provide a string
+* @returns {string} capitalized string
+*
+* @example
+* var out = capitalize( 'last man standing' );
+* // returns 'Last man standing'
+*
+* @example
+* var out = capitalize( 'presidential election' );
+* // returns 'Presidential election'
+*/
+
+Output (examples/index.js):
+var capitalize = require( './../lib' );
+
+console.log( capitalize( 'last man standing' ) );
+// => 'Last man standing'
+
+console.log( capitalize( 'presidential election' ) );
+// => 'Presidential election'
+
+Input (jsdoc):
+{{input}}
+
+Output (examples/index.js):

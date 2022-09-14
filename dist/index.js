@@ -24,6 +24,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const path_1 = require("path");
+const openai_1 = require("openai");
 const fs_1 = require("fs");
 const yaml_1 = require("yaml");
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
@@ -32,6 +33,7 @@ const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const RE_JSDOC_COMMENT = /\/\*\*([\s\S]+?)\*\//;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
+const EXAMPLES_JS_FILE = (0, path_1.join)(PROMPTS_DIR, 'examples_js.txt');
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
     'temperature': 0.7,
@@ -85,9 +87,13 @@ limitations under the License.
 * @returns {Promise<void>} promise indicating completion
 */
 async function main() {
-    const openapi = (0, core_1.getInput)('OPENAI_API_KEY', {
+    const OPENAI_API_KEY = (0, core_1.getInput)('OPENAI_API_KEY', {
         required: true
     });
+    const configuration = new openai_1.Configuration({
+        'apiKey': OPENAI_API_KEY
+    });
+    const openai = new openai_1.OpenAIApi(configuration);
     const workDir = (0, path_1.join)(process.env.GITHUB_WORKSPACE);
     (0, core_1.debug)('Working directory: ' + workDir);
     (0, core_1.debug)('Prompts directory: ' + PROMPTS_DIR);
@@ -174,9 +180,33 @@ async function main() {
                 ],
                 "keywords": []
             };
-            (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2));
+            (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
             (0, core_1.setOutput)('path', path);
             (0, core_1.setOutput)('alias', alias);
+            const jsCode = RE_JS.exec(github_1.context.payload.comment.body);
+            if (jsCode === null) {
+                (0, core_1.debug)('No JS code block found.');
+                return;
+            }
+            (0, core_1.debug)('Found a JS code block, extract JSDoc...');
+            const jsdoc = RE_JSDOC_COMMENT.exec(jsCode[1]);
+            if (jsdoc === null) {
+                (0, core_1.debug)('No JSDoc comment found.');
+                return;
+            }
+            try {
+                const response = await openai.createCompletion({
+                    'prompt': EXAMPLES_JS_FILE.replace('{{input}}', jsdoc[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = LICENSE_TXT + '\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'examples', 'index.js'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
             break;
         }
         default:
