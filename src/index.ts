@@ -18,7 +18,7 @@
 
 // MODULES //
 
-import { debug, getInput, setFailed } from '@actions/core';
+import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { context } from '@actions/github';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
@@ -129,9 +129,60 @@ async function main(): Promise<void> {
 		mkdirSync( join( pkgDir, 'test' ) );
 		
 		const pkgJSON = {
-			'name': `@stdlib/${path}`
+			'name': `@stdlib/${path}`,
+			"version": "0.0.0",
+			"description": "",
+			"license": "Apache-2.0",
+			"author": {
+				"name": "The Stdlib Authors",
+				"url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+			},
+			"contributors": [
+				{
+					"name": "The Stdlib Authors",
+					"url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+				}
+			],
+			"main": "./lib",
+			"directories": {
+				"benchmark": "./benchmark",
+				"doc": "./docs",
+				"example": "./examples",
+				"lib": "./lib",
+				"test": "./test"
+			},
+			"types": "./docs/types",
+			"scripts": {},
+			"homepage": "https://github.com/stdlib-js/stdlib",
+			"repository": {
+				"type": "git",
+				"url": "git://github.com/stdlib-js/stdlib.git"
+			},
+			"bugs": {
+				"url": "https://github.com/stdlib-js/stdlib/issues"
+			},
+			"dependencies": {},
+			"devDependencies": {},
+			"engines": {
+				"node": ">=0.10.0",
+				"npm": ">2.7.0"
+			},
+			"os": [
+				"aix",
+				"darwin",
+				"freebsd",
+				"linux",
+				"macos",
+				"openbsd",
+				"sunos",
+				"win32",
+				"windows"
+			],
+			"keywords": []
 		};
 		writeFileSync( join( pkgDir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 ) );
+		setOutput( 'path', path );
+		setOutput( 'alias', alias );
 		break;
 	}
 	default:

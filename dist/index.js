@@ -123,9 +123,60 @@ async function main() {
             (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'lib'));
             (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'test'));
             const pkgJSON = {
-                'name': `@stdlib/${path}`
+                'name': `@stdlib/${path}`,
+                "version": "0.0.0",
+                "description": "",
+                "license": "Apache-2.0",
+                "author": {
+                    "name": "The Stdlib Authors",
+                    "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+                },
+                "contributors": [
+                    {
+                        "name": "The Stdlib Authors",
+                        "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+                    }
+                ],
+                "main": "./lib",
+                "directories": {
+                    "benchmark": "./benchmark",
+                    "doc": "./docs",
+                    "example": "./examples",
+                    "lib": "./lib",
+                    "test": "./test"
+                },
+                "types": "./docs/types",
+                "scripts": {},
+                "homepage": "https://github.com/stdlib-js/stdlib",
+                "repository": {
+                    "type": "git",
+                    "url": "git://github.com/stdlib-js/stdlib.git"
+                },
+                "bugs": {
+                    "url": "https://github.com/stdlib-js/stdlib/issues"
+                },
+                "dependencies": {},
+                "devDependencies": {},
+                "engines": {
+                    "node": ">=0.10.0",
+                    "npm": ">2.7.0"
+                },
+                "os": [
+                    "aix",
+                    "darwin",
+                    "freebsd",
+                    "linux",
+                    "macos",
+                    "openbsd",
+                    "sunos",
+                    "win32",
+                    "windows"
+                ],
+                "keywords": []
             };
             (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2));
+            (0, core_1.setOutput)('path', path);
+            (0, core_1.setOutput)('alias', alias);
             break;
         }
         default:
