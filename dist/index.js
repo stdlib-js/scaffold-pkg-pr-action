@@ -20,6 +20,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // MODULES //
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
+const yaml_1 = require("yaml");
+// VARIABLES //
+const RE_YAML = /```yaml([\s\S]+?)```/;
 // MAIN //
 /**
 * Main function.
@@ -31,9 +34,24 @@ async function main() {
         required: true
     });
     switch (github_1.context.eventName) {
-        case 'comment':
+        case 'issue_comment': {
             (0, core_1.debug)('Received a comment, checking if it is a command...');
+            // Extract the YAML code block:
+            const matches = RE_YAML.exec(github_1.context.payload.comment.body);
+            if (matches === null) {
+                (0, core_1.debug)('No YAML code block found.');
+                return;
+            }
+            (0, core_1.debug)('Found a YAML code block.');
+            const yaml = (0, yaml_1.parse)(matches[1]);
+            if (yaml.action !== 'scaffold') {
+                (0, core_1.debug)('Not a scaffold command.');
+                return;
+            }
+            const { path, alias, cli } = yaml;
+            (0, core_1.debug)(`Scaffolding package: ${path} (${alias}) ${cli ? 'with CLI' : 'without CLI'}`);
             break;
+        }
         default:
             (0, core_1.setFailed)('Unsupported event name: ' + github_1.context.eventName);
     }
