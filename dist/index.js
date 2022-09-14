@@ -31,7 +31,6 @@ const time_current_year_1 = __importDefault(require("@stdlib/time-current-year")
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
-const RE_JSDOC_COMMENT = /\/\*\*([\s\S]+?)\*\//;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const EXAMPLES_JS_FILE = (0, path_1.join)(PROMPTS_DIR, 'examples_js.txt');
 const OPENAI_SETTINGS = {
@@ -188,21 +187,16 @@ async function main() {
                 (0, core_1.debug)('No JS code block found.');
                 return;
             }
-            (0, core_1.debug)('Found a JS code block, extract JSDoc...');
-            (0, core_1.debug)(JSON.stringify(jsCode, null, 2));
-            const jsdoc = RE_JSDOC_COMMENT.exec(jsCode[1]);
-            (0, core_1.debug)(JSON.stringify(jsdoc, null, 2));
-            if (jsdoc === null) {
-                (0, core_1.debug)('No JSDoc comment found.');
-                return;
-            }
+            (0, core_1.debug)('Found a JS code block...');
             try {
+                const prompt = EXAMPLES_JS_FILE.replace('{{input}}', jsCode[1]);
+                (0, core_1.debug)('Prompt: ' + prompt);
                 const response = await openai.createCompletion({
-                    'prompt': EXAMPLES_JS_FILE.replace('{{input}}', jsdoc[1]),
+                    'prompt': prompt,
                     ...OPENAI_SETTINGS
                 });
                 if (response.data && response.data.choices) {
-                    const txt = LICENSE_TXT + '\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'examples', 'index.js'), txt);
                 }
             }
