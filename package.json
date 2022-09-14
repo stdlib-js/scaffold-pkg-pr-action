@@ -16,7 +16,8 @@
     "dependencies": {
         "@actions/core": "^1.3.0",
         "@actions/github": "^5.0.0",
-        "@stdlib/assert-contains": "^0.0.5"
+        "@stdlib/assert-contains": "^0.0.5",
+        "yaml": "^2.1.1"
     },
     "devDependencies": {
         "@types/node": "^18.0.0",

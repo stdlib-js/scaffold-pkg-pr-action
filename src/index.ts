@@ -20,6 +20,12 @@
 
 import { debug, getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
+import { parse } from 'yaml';
+
+
+// VARIABLES //
+
+const RE_YAML = /```yaml([\s\S]+?)```/;
 
 
 // MAIN //
@@ -34,9 +40,25 @@ async function main(): Promise<void> {
 		required: true 
 	});
 	switch ( context.eventName ) {
-	case 'comment':
+	case 'issue_comment': {
 		debug( 'Received a comment, checking if it is a command...' );
+		
+		// Extract the YAML code block:
+		const matches = RE_YAML.exec( context.payload.comment.body );
+		if ( matches === null ) {
+			debug( 'No YAML code block found.' );
+			return;
+		}
+		debug( 'Found a YAML code block.' );
+		const yaml = parse( matches[ 1 ] );
+		if ( yaml.action !== 'scaffold' ) {
+			debug( 'Not a scaffold command.' );
+			return;
+		}
+		const { path, alias, cli } = yaml;
+		debug( `Scaffolding package: ${path} (${alias}) ${cli ? 'with CLI' : 'without CLI'}` );
 		break;
+	}
 	default:
 		setFailed( 'Unsupported event name: ' + context.eventName );
 	}
