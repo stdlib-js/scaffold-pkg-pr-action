@@ -48,6 +48,12 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Add ${{ steps.scaffold.outputs.alias }}
-          title: Add ${{ steps.scaffold.outputs.alias }}
+          commit-message: Add `${{ steps.scaffold.outputs.alias }}`
+          title: Add `${{ steps.scaffold.outputs.alias }}` package
+          body: |
+            This PR adds the `${{ steps.scaffold.outputs.alias }}` package.
+            
+            ## Notes
+            
+            *   The package was scaffolded using the stdlib scaffolding bot, which uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing.
           branch: ${{ steps.scaffold.outputs.path }}
