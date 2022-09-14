@@ -203,8 +203,102 @@ async function main(): Promise<void> {
 				...OPENAI_SETTINGS
 			});
 			if ( response.data && response.data.choices ) {
-				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
+				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' ) + '\n';
 				writeFileSync( join( pkgDir, 'examples', 'index.js' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const README_MD_FILE = readFileSync( join( PROMPTS_DIR, 'readme_md.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': README_MD_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = README_LICENSE + ( response?.data?.choices[ 0 ].text || '' );
+				writeFileSync( join( pkgDir, 'README.md' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const BENCHMARK_JS_FILE = readFileSync( join( PROMPTS_DIR, 'benchmark_js.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': BENCHMARK_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				writeFileSync( join( pkgDir, 'benchmark', 'benchmark.js' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const INDEX_JS_FILE = readFileSync( join( PROMPTS_DIR, 'index_js.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': INDEX_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				writeFileSync( join( pkgDir, 'lib', 'index.js' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const TEST_JS_FILE = readFileSync( join( PROMPTS_DIR, 'test_js.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': TEST_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = LICENSE_TXT + '\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+				writeFileSync( join( pkgDir, 'test', 'test.js' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const REPL_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'repl_txt.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': REPL_TXT_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				const txt = response?.data?.choices[ 0 ].text || '';
+				writeFileSync( join( pkgDir, 'docs', 'repl.txt' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		let ts = '';
+		try {
+			const INDEX_D_TS_FILE = readFileSync( join( PROMPTS_DIR, 'index_d_ts.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': INDEX_D_TS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				ts = response?.data?.choices[ 0 ].text || '';
+				const txt = LICENSE_TXT + '// TypeScript Version: 2.0\n' + ts;			
+				writeFileSync( join( pkgDir, 'docs', 'types', 'index.d.ts' ), txt );
+			}
+		} catch ( err ) {
+			setFailed( err.message );
+		}
+		try {
+			const TEST_TS_FILE = readFileSync( join( PROMPTS_DIR, 'test_ts.txt' ), 'utf8' );
+			const response = await openai.createCompletion({
+				'prompt': TEST_TS_FILE.replace( '{{input}}', ts ),
+				...OPENAI_SETTINGS
+			});
+			if ( response.data && response.data.choices ) {
+				let txt = response?.data?.choices[ 0 ].text || '';
+				txt = LICENSE_TXT + txt;
+				writeFileSync( join( pkgDir, 'docs', 'types', 'test.ts' ), txt );
 			}
 		} catch ( err ) {
 			setFailed( err.message );

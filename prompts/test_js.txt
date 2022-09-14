@@ -1,0 +1,63 @@
+Input (jsdoc):
+/**
+* Capitalizes the first character in a string.
+*
+* @param {string} str - input string
+* @throws {TypeError} must provide a string
+* @returns {string} capitalized string
+*
+* @example
+* var out = capitalize( 'last man standing' );
+* // returns 'Last man standing'
+*
+* @example
+* var out = capitalize( 'presidential election' );
+* // returns 'Presidential election'
+*/
+
+Output (test.js):
+// MODULES //
+
+var tape = require( 'tape' );
+var capitalize = require( './../lib' );
+
+
+// TESTS //
+
+tape( 'main export is a function', function test( t ) {
+	t.ok( true, __filename );
+	t.equal( typeof capitalize, 'function', 'main export is a function' );
+	t.end();
+});
+
+tape( 'the function throws an error if not provided a string', function test( t ) {
+	var values;
+	var i;
+
+	values = [
+		function noop() {},
+		5,
+		NaN,
+		null,
+		void 0,
+		true,
+		[],
+		{}
+	];
+
+	for ( i = 0; i < values.length; i++ ) {
+		t.throws( badValue( values[i] ), TypeError, 'throws an error when provided '+values[i] );
+	}
+	t.end();
+
+	function badValue( value ) {
+		return function badValue() {
+			capitalize( value );
+		};
+	}
+});
+
+Input (jsdoc):
+{{input}}
+
+Output (test.js):

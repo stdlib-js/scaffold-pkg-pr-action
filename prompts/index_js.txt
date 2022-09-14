@@ -1,0 +1,52 @@
+Input (jsdoc):
+/**
+* Tests if a value is a string having an uppercase first character.
+*
+* @param {*} value - value to test
+* @returns {boolean} boolean indicating whether a value is a string with an uppercase first character
+*
+* @example
+* var bool = isCapitalized( 'Hello' );
+* // returns true
+*
+* @example
+* var bool = isCapitalized( 'WORLD' );
+* // returns true
+*
+* @example
+* var bool = isCapitalized( '!' );
+* // returns false
+*
+* @example
+* var bool = isCapitalized( 'salt and light' );
+* /
+
+Output (lib/index.js):
+/**
+* Test if a value is a string having an uppercase first character.
+*
+* @module @stdlib/assert/is-capitalized
+*
+* @example
+* var isCapitalized = require( '@stdlib/assert/is-capitalized' );
+*
+* var bool = isCapitalized( 'Hello' );
+* // returns true
+*
+* bool = isCapitalized( 'world' );
+* // returns false
+*/
+
+// MODULES //
+
+var isCapitalized = require( './main.js' );
+
+
+// EXPORTS //
+
+module.exports = isCapitalized;
+
+Input (jsdoc):
+{{input}}
+
+Output (lib/index.js):

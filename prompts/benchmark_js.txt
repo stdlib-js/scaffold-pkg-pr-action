@@ -1,0 +1,57 @@
+Input (jsdoc):
+/**
+* Tests if a double-precision floating-point numeric value is a negative finite number.
+*
+* @param {number} x - value to test
+* @returns {boolean} boolean indicating whether the value is a negative finite number
+*
+* @example
+* var bool = isNegativeFinite( -3.14 );
+* // returns true
+*
+* @example
+* var bool = isNegativeFinite( -Infinity );
+* // returns false
+*
+* @example
+* var bool = isNegativeFinite( 2.0 );
+* // returns false
+*/
+
+Output (benchmark/benchmark.js):
+// MODULES //
+
+var bench = require( '@stdlib/bench' );
+var randu = require( '@stdlib/random/base/randu' );
+var isBoolean = require( '@stdlib/assert/is-boolean' ).isPrimitive;
+var pkg = require( './../package.json' ).name;
+var isNegativeFinite = require( './../lib' );
+
+
+// MAIN //
+
+bench( pkg, function benchmark( b ) {
+	var x;
+	var y;
+	var i;
+
+	b.tic();
+	for ( i = 0; i < b.iterations; i++ ) {
+		x = (randu()*200.0) - 100.0;
+		y = isNegativeFinite( x );
+		if ( !isBoolean( y ) ) {
+			b.fail( 'should return a boolean' );
+		}
+	}
+	b.toc();
+	if ( !isBoolean( y ) ) {
+		b.fail( 'should return a boolean' );
+	}
+	b.pass( 'benchmark finished' );
+	b.end();
+});
+
+Input (jsdoc):
+{{input}}
+
+Output (benchmark/benchmark.js):

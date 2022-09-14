@@ -1,0 +1,54 @@
+Input (jsdoc):
+/**
+* Returns a thunk.
+*
+* @param {Function} fcn - function to convert to a thunk
+* @param {...*} [args] - function arguments
+* @throws {TypeError} first argument must be a function
+* @returns {Function} thunk
+*
+* @example
+* var add = require( '@stdlib/math/base/ops/add' );
+*
+* var f = thunk( add, 2, 3 );
+* // returns <Function>
+*
+* // ...
+*
+* // Evaluate the thunk:
+* var v = f();
+* // returns 5
+*/
+
+Output (TS declaration file):
+
+/**
+* Returns a thunk.
+*
+* @param fcn - function to convert to a thunk
+* @param args - function args
+* @returns thunk
+*
+* @example
+* var add = require( `@stdlib/math/base/ops/add` );
+*
+* var f = thunk( add, 2, 3 );
+* // returns <Function>
+*
+* // ...
+*
+* // Evaluate the thunk:
+* var v = f();
+* // returns 5
+*/
+declare function thunk<T extends Array<any>, U>( fcn: ( ...args: T ) => U, ...args: T ): () => U; // tslint-disable-line max-line-length
+
+
+// EXPORTS //
+
+export = thunk;
+
+Input (jsdoc):
+{{input}}
+
+Output (TS declaration file):

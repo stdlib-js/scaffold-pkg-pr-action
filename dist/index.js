@@ -196,8 +196,109 @@ async function main() {
                     ...OPENAI_SETTINGS
                 });
                 if (response.data && response.data.choices) {
-                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                    const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '') + '\n';
                     (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'examples', 'index.js'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const README_MD_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'readme_md.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': README_MD_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = README_LICENSE + (response?.data?.choices[0].text || '');
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'README.md'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const BENCHMARK_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'benchmark_js.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': BENCHMARK_JS_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const INDEX_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'index_js.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': INDEX_JS_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'lib', 'index.js'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const TEST_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_js.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': TEST_JS_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = LICENSE_TXT + '\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const REPL_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'repl_txt.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': REPL_TXT_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    const txt = response?.data?.choices[0].text || '';
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'repl.txt'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            let ts = '';
+            try {
+                const INDEX_D_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'index_d_ts.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': INDEX_D_TS_FILE.replace('{{input}}', jsCode[1]),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    ts = response?.data?.choices[0].text || '';
+                    const txt = LICENSE_TXT + '// TypeScript Version: 2.0\n' + ts;
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'types', 'index.d.ts'), txt);
+                }
+            }
+            catch (err) {
+                (0, core_1.setFailed)(err.message);
+            }
+            try {
+                const TEST_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_ts.txt'), 'utf8');
+                const response = await openai.createCompletion({
+                    'prompt': TEST_TS_FILE.replace('{{input}}', ts),
+                    ...OPENAI_SETTINGS
+                });
+                if (response.data && response.data.choices) {
+                    let txt = response?.data?.choices[0].text || '';
+                    txt = LICENSE_TXT + txt;
+                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'types', 'test.ts'), txt);
                 }
             }
             catch (err) {

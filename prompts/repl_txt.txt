@@ -1,0 +1,45 @@
+Input (jsdoc):
+/**
+* Capitalizes the first character in a string.
+*
+* @param {string} str - input string
+* @throws {TypeError} must provide a string
+* @returns {string} capitalized string
+*
+* @example
+* var out = capitalize( 'last man standing' );
+* // returns 'Last man standing'
+*
+* @example
+* var out = capitalize( 'presidential election' );
+* // returns 'Presidential election'
+*/
+
+Output (repl.txt):
+{{alias}}( str )
+    Capitalizes the first character in a string.
+
+    Parameters
+    ----------
+    str: string
+        Input string.
+
+    Returns
+    -------
+    out: string
+        Capitalized string.
+
+    Examples
+    --------
+    > var out = {{alias}}( 'last man standing' )
+    'Last man standing'
+    > out = {{alias}}( 'presidential election' )
+    'Presidential election'
+
+    See Also
+    --------
+    
+Input (jsdoc):
+{{input}}
+
+Output (repl.txt):
