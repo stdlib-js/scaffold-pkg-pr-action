@@ -189,7 +189,9 @@ async function main() {
                 return;
             }
             (0, core_1.debug)('Found a JS code block, extract JSDoc...');
+            (0, core_1.debug)(JSON.stringify(jsCode, null, 2));
             const jsdoc = RE_JSDOC_COMMENT.exec(jsCode[1]);
+            (0, core_1.debug)(JSON.stringify(jsdoc, null, 2));
             if (jsdoc === null) {
                 (0, core_1.debug)('No JSDoc comment found.');
                 return;
