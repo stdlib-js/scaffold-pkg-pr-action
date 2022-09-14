@@ -49,7 +49,7 @@ Input (jsdoc):
 * // returns 'aaaaabcccc'
 */
 
-Output (bin/cli):
+Output (cli):
 // MODULES //
 
 var resolve = require( 'path' ).resolve;
@@ -160,4 +160,4 @@ main();
 Input (jsdoc):
 {{jsdoc}}
 
-Output (bin/cli):
+Output (cli):

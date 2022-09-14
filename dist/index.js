@@ -39,7 +39,7 @@ const OPENAI_SETTINGS = {
     'top_p': 1,
     'frequency_penalty': 0,
     'presence_penalty': 0,
-    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):']
+    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (']
 };
 const LICENSE_TXT = `/*
 * @license Apache-2.0

@@ -20,7 +20,7 @@ Input (jsdoc):
 * // returns 5
 */
 
-Output (TS declaration file):
+Output (index.d.ts):
 /**
 * Returns a thunk.
 *
@@ -50,4 +50,4 @@ export = thunk;
 Input (jsdoc):
 {{input}}
 
-Output (TS declaration file):
+Output (index.d.ts):

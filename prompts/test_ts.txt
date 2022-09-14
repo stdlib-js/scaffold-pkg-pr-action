@@ -25,7 +25,7 @@ declare function thunk<T extends Array<any>, U>( fcn: ( ...args: T ) => U, ...ar
 
 export = thunk;
 
-Output (ts):
+Output (test.ts):
 import thunk = require( './index' );
 
 
@@ -70,4 +70,4 @@ import thunk = require( './index' );
 Input (ts):
 {{input}}
 
-Output (ts):
+Output (test.ts):
