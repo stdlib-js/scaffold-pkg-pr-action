@@ -32,7 +32,6 @@ const time_current_year_1 = __importDefault(require("@stdlib/time-current-year")
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
-const EXAMPLES_JS_FILE = (0, path_1.join)(PROMPTS_DIR, 'examples_js.txt');
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
     'temperature': 0.7,
@@ -189,6 +188,7 @@ async function main() {
             }
             (0, core_1.debug)('Found a JS code block...');
             try {
+                const EXAMPLES_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'examples_js.txt'), 'utf8');
                 const prompt = EXAMPLES_JS_FILE.replace('{{input}}', jsCode[1]);
                 (0, core_1.debug)('Prompt: ' + prompt);
                 const response = await openai.createCompletion({
