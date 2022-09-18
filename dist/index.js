@@ -102,10 +102,16 @@ async function main() {
                 (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
                 return;
             }
-            // Extract the files created by the PR:
-            const files = github_1.context.payload.pull_request.files;
+            // Get the files created by the PR via the GitHub API:
+            const token = (0, core_1.getInput)('GITHUB_TOKEN');
+            const octokit = (0, github_1.getOctokit)(token);
+            const files = await octokit.rest.pulls.listFiles({
+                'owner': github_1.context.repo.owner,
+                'repo': github_1.context.repo.repo,
+                'pull_number': github_1.context.payload.pull_request.number
+            });
             // Check whether the PR contains a new package's README.md file:
-            const readme = files.find(f => {
+            const readme = files.data.find(f => {
                 return f.filename === 'README.md';
             });
             if (readme === void 0) {

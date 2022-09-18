@@ -19,7 +19,7 @@
 // MODULES //
 
 import { debug, getInput, setFailed, setOutput } from '@actions/core';
-import { context } from '@actions/github';
+import { context, getOctokit } from '@actions/github';
 import { join } from 'path';
 import { Configuration, OpenAIApi } from 'openai';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
@@ -106,11 +106,18 @@ async function main(): Promise<void> {
 			debug( 'PR not assigned to stdlib-bot. Skipping...' );
 			return;
 		}
-		// Extract the files created by the PR:
-		const files = context.payload.pull_request.files;
+		// Get the files created by the PR via the GitHub API:
+		const token = getInput( 'GITHUB_TOKEN' );
+		const octokit = getOctokit( token );
+		
+		const files = await octokit.rest.pulls.listFiles({
+			'owner': context.repo.owner,
+			'repo': context.repo.repo,
+			'pull_number': context.payload.pull_request.number
+		});
 		
 		// Check whether the PR contains a new package's README.md file:
-		const readme = files.find( f => {
+		const readme = files.data.find( f => {
 			return f.filename === 'README.md';
 		});
 		if ( readme === void 0 ) {
