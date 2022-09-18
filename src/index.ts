@@ -100,6 +100,28 @@ async function main(): Promise<void> {
 	debug( 'Prompts directory: '+PROMPTS_DIR );
 
 	switch ( context.eventName ) {
+	case 'pull_request': {
+		// Check whether PR was assigned to the "stdlib-bot" user:
+		if ( context.payload.pull_request.assignee.login !== 'Planeshifter' ) {
+			debug( 'PR not assigned to stdlib-bot. Skipping...' );
+			return;
+		}
+		// Extract the files created by the PR:
+		const files = context.payload.pull_request.files;
+		
+		// Check whether the PR contains a new package's README.md file:
+		const readme = files.find( f => {
+			return f.filename === 'README.md';
+		});
+		if ( readme === void 0 ) {
+			debug( 'PR does not contain a new package\'s README.md file. Skipping...' );
+			return;
+		}
+		// Extract the directory path for the new package:
+		const dir = readme.filename.split( '/' )[ 0 ];
+		debug( 'New package directory: '+dir );
+		break;
+	}
 	case 'issue_comment': {
 		debug( 'Received a comment, checking if it is a command...' );
 		

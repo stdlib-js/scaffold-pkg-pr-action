@@ -96,6 +96,27 @@ async function main() {
     (0, core_1.debug)('Working directory: ' + workDir);
     (0, core_1.debug)('Prompts directory: ' + PROMPTS_DIR);
     switch (github_1.context.eventName) {
+        case 'pull_request': {
+            // Check whether PR was assigned to the "stdlib-bot" user:
+            if (github_1.context.payload.pull_request.assignee.login !== 'Planeshifter') {
+                (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
+                return;
+            }
+            // Extract the files created by the PR:
+            const files = github_1.context.payload.pull_request.files;
+            // Check whether the PR contains a new package's README.md file:
+            const readme = files.find(f => {
+                return f.filename === 'README.md';
+            });
+            if (readme === void 0) {
+                (0, core_1.debug)('PR does not contain a new package\'s README.md file. Skipping...');
+                return;
+            }
+            // Extract the directory path for the new package:
+            const dir = readme.filename.split('/')[0];
+            (0, core_1.debug)('New package directory: ' + dir);
+            break;
+        }
         case 'issue_comment': {
             (0, core_1.debug)('Received a comment, checking if it is a command...');
             // Extract the YAML code block:
