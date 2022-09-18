@@ -113,14 +113,14 @@ async function main() {
             (0, core_1.debug)('Files: ' + JSON.stringify(files.data));
             // Check whether the PR contains a new package's README.md file:
             const readme = files.data.find(f => {
-                return f.filename === 'README.md';
+                return f.filename.endsWith('README.md') && f.status === 'added';
             });
             if (readme === void 0) {
                 (0, core_1.debug)('PR does not contain a new package\'s README.md file. Skipping...');
                 return;
             }
             // Extract the directory path for the new package:
-            const dir = readme.filename.split('/')[0];
+            const dir = readme.filename.replace('/README.md', '');
             (0, core_1.debug)('New package directory: ' + dir);
             break;
         }
