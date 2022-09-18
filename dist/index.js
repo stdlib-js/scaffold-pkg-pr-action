@@ -110,6 +110,7 @@ async function main() {
                 'repo': github_1.context.repo.repo,
                 'pull_number': github_1.context.payload.pull_request.number
             });
+            (0, core_1.debug)('Files: ' + JSON.stringify(files.data));
             // Check whether the PR contains a new package's README.md file:
             const readme = files.data.find(f => {
                 return f.filename === 'README.md';

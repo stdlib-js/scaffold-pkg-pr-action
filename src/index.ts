@@ -115,6 +115,7 @@ async function main(): Promise<void> {
 			'repo': context.repo.repo,
 			'pull_number': context.payload.pull_request.number
 		});
+		debug( 'Files: '+JSON.stringify( files.data ) );
 		
 		// Check whether the PR contains a new package's README.md file:
 		const readme = files.data.find( f => {
