@@ -6,6 +6,9 @@ inputs:
   OPENAI_API_KEY:
     description: Your OpenAI API key for the GPT-3 API.
     required: true
+  GITHUB_TOKEN:
+    description: Your GitHub token for interacting with the GitHub API.
+    required: true
 
 runs:
   using: node16
