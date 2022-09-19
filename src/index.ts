@@ -103,7 +103,7 @@ async function main(): Promise<void> {
 	switch ( context.eventName ) {
 	case 'pull_request': {
 		// Check whether PR was assigned to the "stdlib-bot" user:
-		if ( context.payload.pull_request.assignee.login !== 'Planeshifter' ) {
+		if ( context.payload.pull_request.assignee.login !== 'stdlib-bot' ) {
 			debug( 'PR not assigned to stdlib-bot. Skipping...' );
 			return;
 		}

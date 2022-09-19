@@ -99,7 +99,7 @@ async function main() {
     switch (github_1.context.eventName) {
         case 'pull_request': {
             // Check whether PR was assigned to the "stdlib-bot" user:
-            if (github_1.context.payload.pull_request.assignee.login !== 'Planeshifter') {
+            if (github_1.context.payload.pull_request.assignee.login !== 'stdlib-bot') {
                 (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
                 return;
             }
