@@ -38,7 +38,7 @@ const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
     'temperature': 0.7,
-    'max_tokens': 2048,
+    'max_tokens': 1024,
     'top_p': 1,
     'frequency_penalty': 0,
     'presence_penalty': 0,
@@ -161,14 +161,15 @@ async function main() {
                     has['docs/types/test.ts'] = true;
                 }
             });
-            const usageSectionWithExamples = (0, extract_usage_section_1.default)(readmeText);
+            const usageSection = (0, extract_usage_section_1.default)(readmeText);
+            const examplesSection = (0, extract_examples_section_1.default)(readmeText);
             if (!has['docs/repl.txt']) {
                 (0, core_1.debug)('PR does not contain a new package\'s REPL file. Scaffolding...');
                 try {
                     const response = await openai.createCompletion({
                         ...OPENAI_SETTINGS,
                         'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
-                        'prompt': usageSectionWithExamples + '\n|>|\n\n',
+                        'prompt': usageSection + examplesSection + '\n|>|\n\n',
                         'stop': ['END']
                     });
                     if (response.data && response.data.choices) {
@@ -189,10 +190,9 @@ async function main() {
             }
             if (!has['lib/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
-                const usageSection = (0, extract_usage_section_1.default)(readmeText, { includeExamples: false, removeMultipleNewlines: false });
                 try {
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'index_js.txt'), 'utf8')
-                        .replace('{{input}}', usageSection);
+                        .replace('{{input}}', usageSection.replace(/(\n)+/g, '\n'));
                     (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await openai.createCompletion({
                         ...OPENAI_SETTINGS,
@@ -217,7 +217,6 @@ async function main() {
             if (!has['examples/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s examples file. Scaffolding...');
                 try {
-                    const examplesSection = (0, extract_examples_section_1.default)(readmeText);
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'examples_js.txt'), 'utf8')
                         .replace('{{input}}', examplesSection);
                     (0, core_1.debug)('Prompt: ' + PROMPT);
@@ -243,7 +242,7 @@ async function main() {
             }
             (0, core_1.setOutput)('dir', dir);
             (0, core_1.setOutput)('path', (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/'));
-            (0, core_1.setOutput)('alias', usageSectionWithExamples.substring(0, usageSectionWithExamples.indexOf(' =')));
+            (0, core_1.setOutput)('alias', usageSection.substring(0, usageSection.indexOf(' =')));
             break;
         }
         case 'issue_comment': {
