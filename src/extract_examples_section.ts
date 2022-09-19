@@ -43,9 +43,6 @@ function extractExamplesSection( readme: string ) {
 
 	// Remove any opening <section class=""> tags:
 	txt = txt.replace( /<section class="[^"]+">/g, '' );
-
-	// Remove multiple newlines (Unix):
-	txt = txt.replace( /(\n)+/g, '\n' );
 	
 	return txt;
 }

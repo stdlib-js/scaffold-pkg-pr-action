@@ -24,10 +24,18 @@ const RE_USAGE_SECTION_WITH_EXAMPLES = /<section class="usage">([\s\S]+?)<!-- \/
 const RE_USAGE_SECTION_WITHOUT_EXAMPLES = /<section class="usage">([\s\S]+?)<!-- \/\.usage --/;
 
 
+// TYPES //
+
+type Options = {
+	includeExamples?: boolean;
+	removeMultipleNewlines?: boolean;
+};
+
+
 // MAIN //
 
-function extractUsageSection( readme: string, includeExamples = true ) {
-	const RE = ( includeExamples ) ? RE_USAGE_SECTION_WITH_EXAMPLES : RE_USAGE_SECTION_WITHOUT_EXAMPLES;
+function extractUsageSection( readme: string, options: Options = { includeExamples: true, removeMultipleNewlines: true } ) {
+	const RE = ( options.includeExamples ) ? RE_USAGE_SECTION_WITH_EXAMPLES : RE_USAGE_SECTION_WITHOUT_EXAMPLES;
 	const match = RE.exec( readme );
 	if ( match === null ) {
 		return '';
@@ -49,8 +57,10 @@ function extractUsageSection( readme: string, includeExamples = true ) {
 	// Remove any opening <section class=""> tags:
 	txt = txt.replace( /<section class="[^"]+">/g, '' );
 
-	// Remove multiple newlines (Unix):
-	txt = txt.replace( /(\n)+/g, '\n' );
+	if ( options.removeMultipleNewlines ) {
+		// Remove multiple newlines (Unix):
+		txt = txt.replace( /(\n)+/g, '\n' );
+	}
 	
 	return txt;
 }

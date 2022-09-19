@@ -187,7 +187,7 @@ async function main() {
             }
             if (!has['lib/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
-                const usageSection = (0, extract_usage_section_1.default)(readmeText, false);
+                const usageSection = (0, extract_usage_section_1.default)(readmeText, { includeExamples: false, removeMultipleNewlines: false });
                 try {
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'index_js.txt'), 'utf8')
                         .replace('{{input}}', usageSection);
