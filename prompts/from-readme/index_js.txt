@@ -283,6 +283,6 @@ var main = require( './main.js' );
 
 module.exports = main;
 Input (README.md):
-{{Input}}
+{{input}}
 
 Output (index.js):

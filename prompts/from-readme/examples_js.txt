@@ -110,6 +110,6 @@ var v = f( 5, 3 );
 console.log( v );
 // => 2
 Input (README.md):
-{{Input}}
+{{input}}
 
 Output (examples):
