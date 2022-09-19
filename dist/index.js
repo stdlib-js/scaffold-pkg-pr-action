@@ -42,7 +42,7 @@ const OPENAI_SETTINGS = {
     'top_p': 1,
     'frequency_penalty': 0,
     'presence_penalty': 0,
-    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (']
+    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (', 'END']
 };
 const LICENSE_TXT = `/*
 * @license Apache-2.0
@@ -167,7 +167,7 @@ async function main() {
                 try {
                     const response = await openai.createCompletion({
                         'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
-                        'prompt': usageSectionWithExamples,
+                        'prompt': usageSectionWithExamples + '\n|>|\n\n',
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
