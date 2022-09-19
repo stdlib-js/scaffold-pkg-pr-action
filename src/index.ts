@@ -202,12 +202,12 @@ async function main(): Promise<void> {
 				if ( response.data && response.data.choices ) {
 					const txt = response?.data?.choices[ 0 ].text || '';
 					try {
-						mkdirSync( join( dir, 'examples' ) );
+						mkdirSync( join( dir, 'lib' ) );
 					}
 					catch ( err ) {
-						debug( 'Unable to create `examples` directory. Error: '+err.message );
+						debug( 'Unable to create `lib` directory. Error: '+err.message );
 					}
-					writeFileSync( join( dir, 'examples', 'index.js' ), txt );
+					writeFileSync( join( dir, 'lib', 'index.js' ), txt );
 				}
 			} catch ( err ) {
 				setFailed( err.message );

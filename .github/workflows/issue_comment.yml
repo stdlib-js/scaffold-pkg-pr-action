@@ -18,7 +18,7 @@
 #/
 
 # Workflow name:
-name: test
+name: Scaffold Triggered by Issue Comment
 
 # Workflow triggers:
 on:

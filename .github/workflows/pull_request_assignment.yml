@@ -18,7 +18,7 @@
 #/
 
 # Workflow name:
-name: test
+name: Scaffold Triggered by Pull Request Assignment
 
 # Workflow triggers:
 on:
@@ -61,4 +61,4 @@ jobs:
         run: |
           SLUG=${{ github.repository }}
           echo "Pushing changes to $SLUG..."
-          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" ${{ steps.scaffold.outputs.path }}
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" HEAD:${{ steps.scaffold.outputs.path }}

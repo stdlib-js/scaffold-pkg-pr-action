@@ -194,12 +194,12 @@ async function main() {
                     if (response.data && response.data.choices) {
                         const txt = response?.data?.choices[0].text || '';
                         try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'examples'));
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'lib'));
                         }
                         catch (err) {
-                            (0, core_1.debug)('Unable to create `examples` directory. Error: ' + err.message);
+                            (0, core_1.debug)('Unable to create `lib` directory. Error: ' + err.message);
                         }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'examples', 'index.js'), txt);
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'lib', 'index.js'), txt);
                     }
                 }
                 catch (err) {
