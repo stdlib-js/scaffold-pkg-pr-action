@@ -33,13 +33,16 @@ jobs:
 
     # Define the sequence of job steps...
     steps:
-      # Checkout the current branch:
+      # Checkout the pull request branch:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       # Run the command to scaffold a package:
       - name: Scaffold package
         id: scaffold
-        uses: ./
+        uses: stdlib-js/scaffold-pkg-pr-action@main
         with:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +57,7 @@ jobs:
       - name: 'Commit changes'
         run: |
           git add -A
-          git commit -m "Scaffold package ${{ steps.scaffold.outputs.alias }}"
+          git commit -m "Scaffold ${{ steps.scaffold.outputs.path }}"
           
       # Push changes:
       - name: 'Push changes'
