@@ -28,6 +28,7 @@ const openai_1 = require("openai");
 const fs_1 = require("fs");
 const yaml_1 = require("yaml");
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
+const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
@@ -121,7 +122,113 @@ async function main() {
             }
             // Extract the directory path for the new package:
             const dir = readme.filename.replace('/README.md', '');
+            // Load the package's README.md file:
+            const readmePath = (0, path_1.join)(workDir, readme.filename);
+            const readmeText = (0, fs_1.readFileSync)(readmePath, 'utf8');
             (0, core_1.debug)('New package directory: ' + dir);
+            // Hash map of whether the PR contains a new package's files:
+            const has = {
+                'docs/types/index.d.ts': false,
+                'docs/types/test.ts': false,
+                'lib/index.js': false,
+                'test/test.js': false,
+                'benchmark/benchmark.js': false,
+                'examples/index.js': false,
+                'docs/repl.txt': false
+            };
+            files.data.forEach(f => {
+                if (f.filename.endsWith('docs/types/index.d.ts')) {
+                    has['docs/types/index.d.ts'] = true;
+                }
+                if (f.filename.endsWith('lib/index.js')) {
+                    has['lib/index.js'] = true;
+                }
+                if (f.filename.endsWith('test/test.js')) {
+                    has['test/test.js'] = true;
+                }
+                if (f.filename.endsWith('benchmark/benchmark.js')) {
+                    has['benchmark/benchmark.js'] = true;
+                }
+                if (f.filename.endsWith('examples/index.js')) {
+                    has['examples/index.js'] = true;
+                }
+                if (f.filename.endsWith('docs/repl.txt')) {
+                    has['docs/repl.txt'] = true;
+                }
+                if (f.filename.endsWith('docs/types/test.ts')) {
+                    has['docs/types/test.ts'] = true;
+                }
+            });
+            const usageSectionWithExamples = (0, extract_usage_section_1.default)(readmeText);
+            if (!has['docs/repl.txt']) {
+                (0, core_1.debug)('PR does not contain a new package\'s REPL file. Scaffolding...');
+                try {
+                    const response = await openai.createCompletion({
+                        'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
+                        'prompt': usageSectionWithExamples,
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `docs` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'docs', 'repl.txt'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+            }
+            if (!has['lib/index.js']) {
+                (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
+                try {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'index_js.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': PROMPT.replace('{{input}}', usageSectionWithExamples),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'examples'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `examples` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'examples', 'index.js'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+            }
+            if (!has['examples/index.js']) {
+                (0, core_1.debug)('PR does not contain a new package\'s examples file. Scaffolding...');
+                try {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'examples_js.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        'prompt': PROMPT.replace('{{input}}', usageSectionWithExamples),
+                        ...OPENAI_SETTINGS
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'examples'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `examples` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'examples', 'index.js'), txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+            }
             break;
         }
         case 'issue_comment': {
@@ -226,7 +333,7 @@ async function main() {
             }
             (0, core_1.debug)('Found a JS code block...');
             try {
-                const EXAMPLES_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'examples_js.txt'), 'utf8');
+                const EXAMPLES_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'examples_js.txt'), 'utf8');
                 const prompt = EXAMPLES_JS_FILE.replace('{{input}}', jsCode[1]);
                 (0, core_1.debug)('Prompt: ' + prompt);
                 const response = await openai.createCompletion({
@@ -242,7 +349,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const README_MD_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'readme_md.txt'), 'utf8');
+                const README_MD_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'readme_md.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': README_MD_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -256,7 +363,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const BENCHMARK_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'benchmark_js.txt'), 'utf8');
+                const BENCHMARK_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': BENCHMARK_JS_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -270,7 +377,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const INDEX_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'index_js.txt'), 'utf8');
+                const INDEX_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'index_js.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': INDEX_JS_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -284,7 +391,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const TEST_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_js.txt'), 'utf8');
+                const TEST_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_js.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': TEST_JS_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -298,7 +405,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const REPL_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'repl_txt.txt'), 'utf8');
+                const REPL_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'repl_txt.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': REPL_TXT_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -313,7 +420,7 @@ async function main() {
             }
             let ts = '';
             try {
-                const INDEX_D_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'index_d_ts.txt'), 'utf8');
+                const INDEX_D_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': INDEX_D_TS_FILE.replace('{{input}}', jsCode[1]),
                     ...OPENAI_SETTINGS
@@ -328,7 +435,7 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const TEST_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_ts.txt'), 'utf8');
+                const TEST_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-ts', 'test_ts.txt'), 'utf8');
                 const response = await openai.createCompletion({
                     'prompt': TEST_TS_FILE.replace('{{input}}', ts),
                     ...OPENAI_SETTINGS
@@ -359,7 +466,7 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
                 try {
-                    const CLI_OPTS_JSON_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'cli_opts_json.txt'), 'utf8');
+                    const CLI_OPTS_JSON_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'cli_opts_json.txt'), 'utf8');
                     const response = await openai.createCompletion({
                         'prompt': CLI_OPTS_JSON_FILE.replace('{{jsdoc}}', jsCode[1]),
                         ...OPENAI_SETTINGS
@@ -373,7 +480,7 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
                 try {
-                    const CLI_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'cli.txt'), 'utf8');
+                    const CLI_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'cli.txt'), 'utf8');
                     const response = await openai.createCompletion({
                         'prompt': CLI_FILE.replace('{{jsdoc}}', jsCode[1]),
                         ...OPENAI_SETTINGS
@@ -387,7 +494,7 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
                 try {
-                    const TEST_CLI_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'test_cli_js.txt'), 'utf8');
+                    const TEST_CLI_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_cli_js.txt'), 'utf8');
                     const response = await openai.createCompletion({
                         'prompt': TEST_CLI_JS_FILE.replace('{{jsdoc}}', jsCode[1]),
                         ...OPENAI_SETTINGS

@@ -1,0 +1,115 @@
+Input (README.md):
+### Examples
+
+```javascript
+var Boolean = require( '@stdlib/boolean/ctor' );
+var isBoolean = require( '@stdlib/assert/is-boolean' );
+
+var bool = isBoolean( false );
+// returns true
+
+bool = isBoolean( new Boolean( false ) );
+// returns true
+
+bool = isBoolean( 'true' );
+// returns false
+
+bool = isBoolean( null );
+// returns false
+```
+
+Output (examples):
+var Boolean = require( '@stdlib/boolean/ctor' );
+var isBoolean = require( './../lib' );
+
+console.log( isBoolean( false ) );
+// => true
+
+console.log( isBoolean( new Boolean( false ) ) );
+// => true
+
+console.log( isBoolean( 'true' ) );
+// => false
+
+console.log( isBoolean( null ) );
+// => false
+Input (README.md):
+## Examples
+
+```javascript
+var reBasename = require( '@stdlib/regexp/basename' );
+var RE_BASENAME = reBasename();
+
+// Assuming a POSIX platform...
+var base = RE_BASENAME.exec( '/foo/bar/index.js' )[ 1 ];
+// returns 'index.js'
+
+base = reBasename.REGEXP_POSIX.exec( '/foo/bar/home.html' )[ 1 ];
+// returns 'home.html'
+
+base = reBasename.REGEXP_WIN32.exec( 'C:\\foo\\bar\\home.html' )[ 1 ];
+// returns 'home.html'
+```
+Output (examples):
+var reBasename = require( './../lib' );
+var RE_BASENAME = reBasename();
+
+// Assuming a POSIX platform...
+var base = RE_BASENAME.exec( '/foo/bar/index.js' )[ 1 ];
+console.log( base );
+// => 'index.js'
+
+base = reBasename.REGEXP_POSIX.exec( '/foo/bar/home.html' )[ 1 ];
+console.log( base );
+// => 'home.html'
+
+base = reBasename.REGEXP_WIN32.exec( 'C:\\foo\\bar\\home.html' )[ 1 ];
+console.log( base );
+// => 'home.html'
+Input (README.md):
+## Examples
+
+```javascript
+var compose = require( '@stdlib/utils/compose' );
+
+function a( x, y ) {
+    return x * y;
+}
+
+function b( z ) {
+    return z + 5;
+}
+
+function c( r ) {
+    return r / 10;
+}
+
+var f = compose( c, b, a );
+
+var v = f( 5, 3 );
+// returns 2
+```
+Output (examples):
+var compose = require( './../lib' );
+
+function a( x, y ) {
+    return x * y;
+}
+
+function b( z ) {
+    return z + 5;
+}
+
+function c( r ) {
+    return r / 10;
+}
+
+var f = compose( c, b, a );
+
+var v = f( 5, 3 );
+console.log( v );
+// => 2
+Input (README.md):
+{{Input}}
+
+Output (examples):

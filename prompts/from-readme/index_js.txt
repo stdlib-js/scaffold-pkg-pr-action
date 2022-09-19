@@ -1,0 +1,316 @@
+Input (README.md):
+# isBoolean
+
+> Test if a value is a boolean.
+
+### Usage
+
+```javascript
+var isBoolean = require( '@stdlib/assert/is-boolean' );
+```
+
+#### isBoolean( value )
+
+Tests if a `value` is a `boolean`.
+
+```javascript
+var Boolean = require( '@stdlib/boolean/ctor' );
+
+var bool = isBoolean( false );
+// returns true
+
+bool = isBoolean( true );
+// returns true
+
+bool = isBoolean( new Boolean( false ) );
+// returns true
+
+bool = isBoolean( new Boolean( true ) );
+// returns true
+```
+
+#### isBoolean.isPrimitive( value )
+
+Tests if a `value` is a primitive `boolean`.
+
+```javascript
+var Boolean = require( '@stdlib/boolean/ctor' );
+
+var bool = isBoolean.isPrimitive( true );
+// returns true
+
+bool = isBoolean.isPrimitive( false );
+// returns true
+
+bool = isBoolean.isPrimitive( new Boolean( true ) );
+// returns false
+```
+
+#### isBoolean.isObject( value )
+
+Tests if a `value` is a `Boolean` object.
+
+```javascript
+var Boolean = require( '@stdlib/boolean/ctor' );
+
+var bool = isBoolean.isObject( true );
+// returns false
+
+bool = isBoolean.isObject( new Boolean( false ) );
+// returns true
+```
+Output (index.js):
+/**
+* Test if a value is a boolean.
+*
+* @module @stdlib/assert/is-boolean
+*
+* @example
+* var Boolean = require( '@stdlib/boolean/ctor' );
+* var isBoolean = require( '@stdlib/assert/is-boolean' );
+*
+* var bool = isBoolean( false );
+* // returns true
+*
+* bool = isBoolean( new Boolean( false ) );
+* // returns true
+*
+* @example
+* var Boolean = require( '@stdlib/boolean/ctor' );
+* var isBoolean = require( '@stdlib/assert/is-boolean' ).isPrimitive;
+*
+* var bool = isBoolean( false );
+* // returns true
+*
+* bool = isBoolean( new Boolean( true ) );
+* // returns false
+*
+* @example
+* var Boolean = require( '@stdlib/boolean/ctor' );
+* var isBoolean = require( '@stdlib/assert/is-boolean' ).isObject;
+*
+* var bool = isBoolean( true );
+* // returns false
+*
+* bool = isBoolean( new Boolean( false ) );
+* // returns true
+*/
+
+// MODULES //
+
+var setReadOnly = require( '@stdlib/utils/define-nonenumerable-read-only-property' );
+var main = require( './main.js' );
+var isPrimitive = require( './primitive.js' );
+var isObject = require( './object.js' );
+
+
+// MAIN //
+
+setReadOnly( main, 'isPrimitive', isPrimitive );
+setReadOnly( main, 'isObject', isObject );
+
+
+// EXPORTS //
+
+module.exports = main;
+Input (README.md):
+# reBasename
+
+> [Regular expression][regexp] to capture the last part of a path.
+
+## Usage
+
+```javascript
+var reBasename = require( '@stdlib/regexp/basename' );
+```
+
+#### reBasename( \[platform] )
+
+Returns a [regular expression][regexp] to capture the last part of a path.
+
+```javascript
+var RE = reBasename();
+// returns <RegExp>
+
+RE = reBasename( 'posix' );
+// returns <RegExp>
+
+var base = RE.exec( '/foo/bar/index.js' )[ 1 ];
+// returns 'index.js'
+
+RE = reBasename( 'win32' );
+// returns <RegExp>
+
+base = RE.exec( 'C:\\foo\\bar\\index.js' )[ 1 ];
+// returns 'index.js'
+```
+
+#### reBasename.REGEXP
+
+[Regular expression][regexp] to capture the last part of a path.
+
+```javascript
+var bool = ( reBasename.REGEXP.toString() === reBasename().toString() );
+// returns true
+```
+
+#### reBasename.REGEXP_POSIX
+
+[Regular expression][@stdlib/regexp/basename-posix] to capture the last part of a [POSIX][posix] path. 
+
+```javascript
+var base = reBasename.REGEXP_POSIX.exec( '/foo/bar/index.js' )[ 1 ];
+// returns 'index.js'
+```
+
+#### reBasename.REGEXP_WIN32
+
+[Regular expression][@stdlib/regexp/basename-windows] to capture the last part of a Windows path. 
+
+```javascript
+var base = reBasename.REGEXP_WIN32.exec( 'C:\\foo\\bar\\index.js' )[ 1 ];
+// returns 'index.js'
+```
+Output (index.js):
+/**
+* Return a regular expression to capture the last part of a path.
+*
+* @module @stdlib/regexp/basename
+*
+* @example
+* var reBasename = require( '@stdlib/regexp/basename' );
+* var RE_BASENAME = reBasename();
+*
+* // On a POSIX platform...
+* var base = RE_BASENAME.exec( '/foo/bar/index.js' )[ 1 ];
+* // returns 'index.js'
+*
+* @example
+* var reBasename = require( '@stdlib/regexp/basename' );
+* var RE_BASENAME = reBasename();
+*
+* // On a Windows platform...
+* var base = RE_BASENAME.exec( 'C:\\foo\\bar\\index.js' )[ 1 ];
+* // returns 'index.js'
+*/
+
+// MODULES //
+
+var setReadOnly = require( '@stdlib/utils/define-nonenumerable-read-only-property' );
+var posix = require( '@stdlib/regexp/basename-posix' ).REGEXP;
+var win32 = require( '@stdlib/regexp/basename-windows' ).REGEXP;
+var IS_WINDOWS = require( '@stdlib/assert/is-windows' );
+var main = require( './main.js' );
+
+
+// VARIABLES //
+
+var REGEXP = ( IS_WINDOWS ) ? win32 : posix;
+
+
+// MAIN //
+
+setReadOnly( main, 'REGEXP', REGEXP );
+setReadOnly( main, 'REGEXP_POSIX', posix );
+setReadOnly( main, 'REGEXP_WIN32', win32 );
+
+
+// EXPORTS //
+
+module.exports = main;
+Input (README.md):
+# snakecase
+
+> Convert a string to snake case.
+
+## Usage
+
+```javascript
+var snakecase = require( '@stdlib/string/snakecase' );
+```
+
+#### snakecase( str )
+
+Converts a string to snake case.
+
+```javascript
+var str = snakecase( 'Foo Bar' );
+// returns 'foo_bar'
+
+str = snakecase( 'I am a tiny little house' );
+// returns 'i_am_a_tiny_little_house'
+
+str = snakecase( 'Hello World!' );
+// returns 'hello_world'
+```
+Output (index.js):
+/**
+* Convert a string to snake case.
+*
+* @module @stdlib/string/snakecase
+*
+* @example
+* var snakecase = require( '@stdlib/string/snakecase' );
+*
+* var str = snakecase( 'Foo Bar' );
+* // returns 'foo_bar'
+*
+* str = snakecase( 'I am a tiny little house' );
+* // returns 'i_am_a_tiny_little_house'
+*/
+
+// MODULES //
+
+var main = require( './main.js' );
+
+
+// EXPORTS //
+
+module.exports = main;
+Input (README.md):
+# capitalize
+
+> Capitalize the first character in a string.
+
+## Usage
+
+```javascript
+var capitalize = require( '@stdlib/string/capitalize' );
+```
+
+#### capitalize( str )
+
+Capitalizes the first character in a string.
+
+```javascript
+var out = capitalize( 'last man standing' );
+// returns 'Last man standing'
+
+out = capitalize( 'Hidden Treasures' );
+// returns 'Hidden Treasures'
+```
+Output (index.js):
+/**
+* Capitalize the first character in a string.
+*
+* @module @stdlib/string/capitalize
+*
+* @example
+* var capitalize = require( '@stdlib/string/capitalize' );
+*
+* var out = capitalize( 'last man standing' );
+* // returns 'Last man standing'
+*/
+
+// MODULES //
+
+var main = require( './main.js' );
+
+
+// EXPORTS //
+
+module.exports = main;
+Input (README.md):
+{{Input}}
+
+Output (index.js):
