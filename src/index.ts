@@ -197,9 +197,11 @@ async function main(): Promise<void> {
 			debug( 'PR does not contain a new package\'s index file. Scaffolding...' );
 			const usageSection = extractUsageSection( readmeText, false );
 			try {
-				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'index_js.txt' ), 'utf8' );
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'index_js.txt' ), 'utf8' )
+					.replace( '{{input}}', usageSection );
+				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT.replace( '{{input}}', usageSection ),	
+					'prompt': PROMPT,
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
@@ -220,9 +222,11 @@ async function main(): Promise<void> {
 			debug( 'PR does not contain a new package\'s examples file. Scaffolding...' );
 			try {
 				const examplesSection = extractExamplesSection( readmeText );
-				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'examples_js.txt' ), 'utf8' );
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'examples_js.txt' ), 'utf8' )
+					.replace( '{{input}}', examplesSection );
+				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT.replace( '{{input}}', examplesSection ),
+					'prompt': PROMPT,
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
