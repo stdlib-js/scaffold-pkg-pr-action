@@ -28,6 +28,8 @@ const openai_1 = require("openai");
 const fs_1 = require("fs");
 const yaml_1 = require("yaml");
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
+const string_substring_after_1 = __importDefault(require("@stdlib/string-substring-after"));
+const extract_examples_section_1 = __importDefault(require("./extract_examples_section"));
 const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
@@ -185,10 +187,11 @@ async function main() {
             }
             if (!has['lib/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
+                const usageSection = (0, extract_usage_section_1.default)(readmeText, false);
                 try {
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'index_js.txt'), 'utf8');
                     const response = await openai.createCompletion({
-                        'prompt': PROMPT.replace('{{input}}', usageSectionWithExamples),
+                        'prompt': PROMPT.replace('{{input}}', usageSection),
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
@@ -209,9 +212,10 @@ async function main() {
             if (!has['examples/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s examples file. Scaffolding...');
                 try {
+                    const examplesSection = (0, extract_examples_section_1.default)(readmeText);
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'examples_js.txt'), 'utf8');
                     const response = await openai.createCompletion({
-                        'prompt': PROMPT.replace('{{input}}', usageSectionWithExamples),
+                        'prompt': PROMPT.replace('{{input}}', examplesSection),
                         ...OPENAI_SETTINGS
                     });
                     if (response.data && response.data.choices) {
@@ -229,6 +233,9 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
             }
+            (0, core_1.setOutput)('dir', dir);
+            (0, core_1.setOutput)('path', (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/'));
+            (0, core_1.setOutput)('alias', usageSectionWithExamples.substring(0, usageSectionWithExamples.indexOf(' =')));
             break;
         }
         case 'issue_comment': {

@@ -25,6 +25,8 @@ import { Configuration, OpenAIApi } from 'openai';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
+import substringAfter from '@stdlib/string-substring-after';
+import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 
 
@@ -193,10 +195,11 @@ async function main(): Promise<void> {
 		}
 		if ( !has['lib/index.js'] ) {
 			debug( 'PR does not contain a new package\'s index file. Scaffolding...' );
+			const usageSection = extractUsageSection( readmeText, false );
 			try {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'index_js.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT.replace( '{{input}}', usageSectionWithExamples ),	
+					'prompt': PROMPT.replace( '{{input}}', usageSection ),	
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
@@ -216,9 +219,10 @@ async function main(): Promise<void> {
 		if ( !has['examples/index.js'] ) {
 			debug( 'PR does not contain a new package\'s examples file. Scaffolding...' );
 			try {
+				const examplesSection = extractExamplesSection( readmeText );
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'examples_js.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT.replace( '{{input}}', usageSectionWithExamples ),
+					'prompt': PROMPT.replace( '{{input}}', examplesSection ),
 					...OPENAI_SETTINGS
 				});
 				if ( response.data && response.data.choices ) {
@@ -234,7 +238,10 @@ async function main(): Promise<void> {
 			} catch ( err ) {
 				setFailed( err.message );
 			}
-		}			
+		}	
+		setOutput( 'dir', dir );	
+		setOutput( 'path', substringAfter( dir, 'lib/node_modules/@stdlib/' ) );
+		setOutput( 'alias', usageSectionWithExamples.substring( 0, usageSectionWithExamples.indexOf( ' =' ) ) );
 		break;
 	}
 	case 'issue_comment': {

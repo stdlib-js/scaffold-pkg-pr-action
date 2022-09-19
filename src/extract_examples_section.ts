@@ -20,15 +20,13 @@
 
 // VARIABLES //
 
-const RE_USAGE_SECTION_WITH_EXAMPLES = /<section class="usage">([\s\S]+?)<!-- \/\.examples -->/;
-const RE_USAGE_SECTION_WITHOUT_EXAMPLES = /<section class="usage">([\s\S]+?)<!-- \/\.usage --/;
+const RE_EXAMPLES_SECTION = /<section class="examples">([\s\S]+?)<!-- \/\.examples -->/;
 
 
 // MAIN //
 
-function extractUsageSection( readme: string, includeExamples = true ) {
-	const RE = ( includeExamples ) ? RE_USAGE_SECTION_WITH_EXAMPLES : RE_USAGE_SECTION_WITHOUT_EXAMPLES;
-	const match = RE.exec( readme );
+function extractExamplesSection( readme: string ) {
+	const match = RE_EXAMPLES_SECTION.exec( readme );
 	if ( match === null ) {
 		return '';
 	}
@@ -37,9 +35,6 @@ function extractUsageSection( readme: string, includeExamples = true ) {
 	// Replace Windows line endings with Unix line endings:
 	txt = txt.replace( /\r\n/g, '\n' );
 	
-	// Remove leading section heading and code fence:
-	txt = txt.replace( /^\n\n## Usage\n\n```javascript\nvar /, '' );
-
 	// Remove any HTML comments:
 	txt = txt.replace( /<!--([\s\S]*?)-->/g, '' );
 
@@ -58,4 +53,4 @@ function extractUsageSection( readme: string, includeExamples = true ) {
 
 // EXPORTS //
 
-export = extractUsageSection;
+export = extractExamplesSection;

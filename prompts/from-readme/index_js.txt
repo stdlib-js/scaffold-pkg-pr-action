@@ -1,12 +1,5 @@
 Input (README.md):
-# isBoolean
-
-> Test if a value is a boolean.
-
-### Usage
-
-```javascript
-var isBoolean = require( '@stdlib/assert/is-boolean' );
+isBoolean = require( '@stdlib/assert/is-boolean' );
 ```
 
 #### isBoolean( value )
@@ -114,14 +107,7 @@ setReadOnly( main, 'isObject', isObject );
 
 module.exports = main;
 Input (README.md):
-# reBasename
-
-> [Regular expression][regexp] to capture the last part of a path.
-
-## Usage
-
-```javascript
-var reBasename = require( '@stdlib/regexp/basename' );
+reBasename = require( '@stdlib/regexp/basename' );
 ```
 
 #### reBasename( \[platform] )
@@ -219,14 +205,7 @@ setReadOnly( main, 'REGEXP_WIN32', win32 );
 
 module.exports = main;
 Input (README.md):
-# snakecase
-
-> Convert a string to snake case.
-
-## Usage
-
-```javascript
-var snakecase = require( '@stdlib/string/snakecase' );
+snakecase = require( '@stdlib/string/snakecase' );
 ```
 
 #### snakecase( str )
@@ -268,14 +247,7 @@ var main = require( './main.js' );
 
 module.exports = main;
 Input (README.md):
-# capitalize
-
-> Capitalize the first character in a string.
-
-## Usage
-
-```javascript
-var capitalize = require( '@stdlib/string/capitalize' );
+capitalize = require( '@stdlib/string/capitalize' );
 ```
 
 #### capitalize( str )

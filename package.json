@@ -17,6 +17,7 @@
         "@actions/core": "^1.3.0",
         "@actions/github": "^5.0.0",
         "@stdlib/assert-contains": "^0.0.5",
+        "@stdlib/string-substring-after": "^0.0.2",
         "@stdlib/time-current-year": "^0.0.2",
         "openai": "^3.0.0",
         "yaml": "^2.1.1"
