@@ -42,7 +42,7 @@ const OPENAI_SETTINGS = {
 	'top_p': 1,
 	'frequency_penalty': 0,
 	'presence_penalty': 0,
-	'stop': [ 'Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (', 'END' ]
+	'stop': [ 'Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (' ]
 };
 const LICENSE_TXT = `/*
 * @license Apache-2.0
@@ -175,9 +175,10 @@ async function main(): Promise<void> {
 			debug( 'PR does not contain a new package\'s REPL file. Scaffolding...' );
 			try {
 				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
 					'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
 					'prompt': usageSectionWithExamples + '\n|>|\n\n',
-					...OPENAI_SETTINGS
+					'stop': [ 'END' ]
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = response?.data?.choices[ 0 ].text || '';
@@ -190,6 +191,7 @@ async function main(): Promise<void> {
 					writeFileSync( join( dir, 'docs', 'repl.txt' ), txt );
 				}
 			} catch ( err ) {
+				debug( err );
 				setFailed( err.message );
 			}
 		}
@@ -201,8 +203,8 @@ async function main(): Promise<void> {
 					.replace( '{{input}}', usageSection );
 				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT,
-					...OPENAI_SETTINGS
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = response?.data?.choices[ 0 ].text || '';
@@ -215,6 +217,7 @@ async function main(): Promise<void> {
 					writeFileSync( join( dir, 'lib', 'index.js' ), txt );
 				}
 			} catch ( err ) {
+				debug( err );
 				setFailed( err.message );
 			}
 		}
@@ -226,8 +229,8 @@ async function main(): Promise<void> {
 					.replace( '{{input}}', examplesSection );
 				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
-					'prompt': PROMPT,
-					...OPENAI_SETTINGS
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = response?.data?.choices[ 0 ].text || '';
@@ -240,6 +243,7 @@ async function main(): Promise<void> {
 					writeFileSync( join( dir, 'examples', 'index.js' ), txt );
 				}
 			} catch ( err ) {
+				debug( err );
 				setFailed( err.message );
 			}
 		}	
@@ -357,8 +361,8 @@ async function main(): Promise<void> {
 			const prompt = EXAMPLES_JS_FILE.replace( '{{input}}', jsCode[ 1 ] );
 			debug( 'Prompt: '+prompt );
 			const response = await openai.createCompletion({
-				'prompt': prompt,
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': prompt
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' ) + '\n';
@@ -370,8 +374,8 @@ async function main(): Promise<void> {
 		try {
 			const README_MD_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'readme_md.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': README_MD_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': README_MD_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = README_LICENSE + ( response?.data?.choices[ 0 ].text || '' );
@@ -383,8 +387,8 @@ async function main(): Promise<void> {
 		try {
 			const BENCHMARK_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': BENCHMARK_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': BENCHMARK_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
@@ -396,8 +400,8 @@ async function main(): Promise<void> {
 		try {
 			const INDEX_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_js.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': INDEX_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': INDEX_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
@@ -409,8 +413,8 @@ async function main(): Promise<void> {
 		try {
 			const TEST_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'test_js.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': TEST_JS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': TEST_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
@@ -422,8 +426,8 @@ async function main(): Promise<void> {
 		try {
 			const REPL_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'repl_txt.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': REPL_TXT_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': REPL_TXT_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				const txt = response?.data?.choices[ 0 ].text || '';
@@ -436,8 +440,8 @@ async function main(): Promise<void> {
 		try {
 			const INDEX_D_TS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': INDEX_D_TS_FILE.replace( '{{input}}', jsCode[ 1 ] ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': INDEX_D_TS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
 				ts = response?.data?.choices[ 0 ].text || '';
@@ -450,8 +454,8 @@ async function main(): Promise<void> {
 		try {
 			const TEST_TS_FILE = readFileSync( join( PROMPTS_DIR, 'from-ts', 'test_ts.txt' ), 'utf8' );
 			const response = await openai.createCompletion({
-				'prompt': TEST_TS_FILE.replace( '{{input}}', ts ),
-				...OPENAI_SETTINGS
+				...OPENAI_SETTINGS,
+				'prompt': TEST_TS_FILE.replace( '{{input}}', ts )
 			});
 			if ( response.data && response.data.choices ) {
 				let txt = response?.data?.choices[ 0 ].text || '';
@@ -467,8 +471,8 @@ async function main(): Promise<void> {
 			try {
 				const USAGE_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'usage_txt.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
-					'prompt': USAGE_TXT_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ).replace( '{{cli}}', cli ),
-					...OPENAI_SETTINGS
+					...OPENAI_SETTINGS,
+					'prompt': USAGE_TXT_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ).replace( '{{cli}}', cli )
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = response?.data?.choices[ 0 ].text || '';
@@ -480,8 +484,8 @@ async function main(): Promise<void> {
 			try {
 				const CLI_OPTS_JSON_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli_opts_json.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
-					'prompt': CLI_OPTS_JSON_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ),
-					...OPENAI_SETTINGS
+					...OPENAI_SETTINGS,
+					'prompt': CLI_OPTS_JSON_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] )
 				});
 				if ( response.data && response.data.choices ) {
 					const json = response?.data?.choices[ 0 ].text || '';
@@ -493,8 +497,8 @@ async function main(): Promise<void> {
 			try {
 				const CLI_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
-					'prompt': CLI_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ),
-					...OPENAI_SETTINGS
+					...OPENAI_SETTINGS,
+					'prompt': CLI_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] )
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
