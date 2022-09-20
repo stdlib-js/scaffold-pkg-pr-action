@@ -148,8 +148,29 @@ async function main() {
                 'test/test.cli.js': false
             };
             files.data.forEach(f => {
+                if (f.filename.endsWith('benchmark/benchmark.js')) {
+                    has['benchmark/benchmark.js'] = true;
+                }
+                if (f.filename.endsWith('bin/cli')) {
+                    has['bin/cli'] = true;
+                }
                 if (f.filename.endsWith('docs/types/index.d.ts')) {
                     has['docs/types/index.d.ts'] = true;
+                }
+                if (f.filename.endsWith('docs/types/test.ts')) {
+                    has['docs/types/test.ts'] = true;
+                }
+                if (f.filename.endsWith('docs/repl.txt')) {
+                    has['docs/repl.txt'] = true;
+                }
+                if (f.filename.endsWith('docs/usage.txt')) {
+                    has['docs/usage.txt'] = true;
+                }
+                if (f.filename.endsWith('etc/cli_opts.json')) {
+                    has['etc/cli_opts.json'] = true;
+                }
+                if (f.filename.endsWith('examples/index.js')) {
+                    has['examples/index.js'] = true;
                 }
                 if (f.filename.endsWith('lib/index.js')) {
                     has['lib/index.js'] = true;
@@ -157,17 +178,8 @@ async function main() {
                 if (f.filename.endsWith('test/test.js')) {
                     has['test/test.js'] = true;
                 }
-                if (f.filename.endsWith('benchmark/benchmark.js')) {
-                    has['benchmark/benchmark.js'] = true;
-                }
-                if (f.filename.endsWith('examples/index.js')) {
-                    has['examples/index.js'] = true;
-                }
-                if (f.filename.endsWith('docs/repl.txt')) {
-                    has['docs/repl.txt'] = true;
-                }
-                if (f.filename.endsWith('docs/types/test.ts')) {
-                    has['docs/types/test.ts'] = true;
+                if (f.filename.endsWith('test/test.cli.js')) {
+                    has['test/test.cli.js'] = true;
                 }
             });
             const usageSection = (0, extract_usage_section_1.default)(readmeText);
@@ -252,7 +264,7 @@ async function main() {
             }
             if (cliSection) {
                 if (!has['bin/cli']) {
-                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'bin_cli.txt'), 'utf8')
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'cli.txt'), 'utf8')
                         .replace('{{input}}', cliSection);
                     (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await openai.createCompletion({
