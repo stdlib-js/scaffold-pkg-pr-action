@@ -81,6 +81,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 -->`;
+const SEE_ALSO = `
+
+    See Also
+    --------`;
 // MAIN //
 /**
 * Main function.
@@ -173,7 +177,7 @@ async function main() {
                         'stop': ['END']
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = (response?.data?.choices[0].text || '') + SEE_ALSO;
                         try {
                             (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
                         }
@@ -199,7 +203,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         try {
                             (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'lib'));
                         }
@@ -225,7 +229,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         try {
                             (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'examples'));
                         }
