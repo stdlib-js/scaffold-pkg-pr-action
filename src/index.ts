@@ -28,6 +28,7 @@ import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
 import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
+import extractCLISection from './extract_cli_section';
 
 
 // VARIABLES //
@@ -143,13 +144,17 @@ async function main(): Promise<void> {
 		
 		// Hash map of whether the PR contains a new package's files:
 		const has = {
+			'benchmark/benchmark.js': false,
+			'bin/cli': false,
 			'docs/types/index.d.ts': false,
 			'docs/types/test.ts': false,
+			'docs/repl.txt': false,
+			'docs/usage.txt': false,
+			'etc/cli_opts.json': false,
+			'examples/index.js': false,
 			'lib/index.js': false,
 			'test/test.js': false,
-			'benchmark/benchmark.js': false,
-			'examples/index.js': false,
-			'docs/repl.txt': false
+			'test/test.cli.js': false
 		};
 		files.data.forEach( f => {
 			if ( f.filename.endsWith( 'docs/types/index.d.ts' ) ) {
@@ -176,6 +181,7 @@ async function main(): Promise<void> {
 		});
 		const usageSection = extractUsageSection( readmeText );
 		const examplesSection = extractExamplesSection( readmeText );
+		const cliSection = extractCLISection( readmeText );
 		if ( !has['docs/repl.txt'] ) {
 			debug( 'PR does not contain a new package\'s REPL file. Scaffolding...' );
 			try {
@@ -250,6 +256,84 @@ async function main(): Promise<void> {
 				setFailed( err.message );
 			}
 		}	
+		if ( cliSection ) {
+			if ( !has[ 'bin/cli' ] ) {
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'bin_cli.txt' ), 'utf8' )
+					.replace( '{{input}}', cliSection );
+				debug( 'Prompt: '+PROMPT );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = ( response?.data?.choices[ 0 ].text || '' );
+					try {
+						mkdirSync( join( dir, 'bin' ) );
+					}
+					catch ( err ) {
+						debug( 'Unable to create `bin` directory. Error: '+err.message );
+					}
+					writeFileSync( join( dir, 'bin', 'cli' ), txt );
+				}
+			}
+			if ( !has[ 'docs/usage.txt' ] ) {
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'usage_txt.txt' ), 'utf8' )
+					.replace( '{{input}}', cliSection );
+				debug( 'Prompt: '+PROMPT );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = ( response?.data?.choices[ 0 ].text || '' );
+					try {
+						mkdirSync( join( dir, 'docs' ) );
+					}
+					catch ( err ) {
+						debug( 'Unable to create `docs` directory. Error: '+err.message );
+					}
+					writeFileSync( join( dir, 'docs', 'usage.txt' ), txt );
+				}
+			}
+			if ( !has[ 'etc/cli_opts.json' ] ) {
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'cli_opts_json.txt' ), 'utf8' )
+					.replace( '{{input}}', cliSection );
+				debug( 'Prompt: '+PROMPT );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = ( response?.data?.choices[ 0 ].text || '' );
+					try {
+						mkdirSync( join( dir, 'etc' ) );
+					}
+					catch ( err ) {
+						debug( 'Unable to create `etc` directory. Error: '+err.message );
+					}
+					writeFileSync( join( dir, 'etc', 'cli_opts.json' ), txt );
+				}
+			}
+			if ( !has[ 'test/test.cli.js' ] ) {
+				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'test_cli_js.txt' ), 'utf8' )
+					.replace( '{{input}}', cliSection );
+				debug( 'Prompt: '+PROMPT );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': PROMPT
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = ( response?.data?.choices[ 0 ].text || '' );
+					try {
+						mkdirSync( join( dir, 'test' ) );
+					}
+					catch ( err ) {
+						debug( 'Unable to create `test` directory. Error: '+err.message );
+					}
+					writeFileSync( join( dir, 'test', 'test.cli.js' ), txt );
+				}
+			}
+		}
 		setOutput( 'dir', dir );	
 		setOutput( 'path', substringAfter( dir, 'lib/node_modules/@stdlib/' ) );
 		setOutput( 'alias', usageSection.substring( 0, usageSection.indexOf( ' =' ) ) );

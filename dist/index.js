@@ -31,6 +31,7 @@ const time_current_year_1 = __importDefault(require("@stdlib/time-current-year")
 const string_substring_after_1 = __importDefault(require("@stdlib/string-substring-after"));
 const extract_examples_section_1 = __importDefault(require("./extract_examples_section"));
 const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
+const extract_cli_section_1 = __importDefault(require("./extract_cli_section"));
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
@@ -134,13 +135,17 @@ async function main() {
             (0, core_1.debug)('New package directory: ' + dir);
             // Hash map of whether the PR contains a new package's files:
             const has = {
+                'benchmark/benchmark.js': false,
+                'bin/cli': false,
                 'docs/types/index.d.ts': false,
                 'docs/types/test.ts': false,
+                'docs/repl.txt': false,
+                'docs/usage.txt': false,
+                'etc/cli_opts.json': false,
+                'examples/index.js': false,
                 'lib/index.js': false,
                 'test/test.js': false,
-                'benchmark/benchmark.js': false,
-                'examples/index.js': false,
-                'docs/repl.txt': false
+                'test/test.cli.js': false
             };
             files.data.forEach(f => {
                 if (f.filename.endsWith('docs/types/index.d.ts')) {
@@ -167,6 +172,7 @@ async function main() {
             });
             const usageSection = (0, extract_usage_section_1.default)(readmeText);
             const examplesSection = (0, extract_examples_section_1.default)(readmeText);
+            const cliSection = (0, extract_cli_section_1.default)(readmeText);
             if (!has['docs/repl.txt']) {
                 (0, core_1.debug)('PR does not contain a new package\'s REPL file. Scaffolding...');
                 try {
@@ -242,6 +248,84 @@ async function main() {
                 catch (err) {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
+                }
+            }
+            if (cliSection) {
+                if (!has['bin/cli']) {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'bin_cli.txt'), 'utf8')
+                        .replace('{{input}}', cliSection);
+                    (0, core_1.debug)('Prompt: ' + PROMPT);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = (response?.data?.choices[0].text || '');
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'bin'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `bin` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'bin', 'cli'), txt);
+                    }
+                }
+                if (!has['docs/usage.txt']) {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'usage_txt.txt'), 'utf8')
+                        .replace('{{input}}', cliSection);
+                    (0, core_1.debug)('Prompt: ' + PROMPT);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = (response?.data?.choices[0].text || '');
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `docs` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'docs', 'usage.txt'), txt);
+                    }
+                }
+                if (!has['etc/cli_opts.json']) {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'cli_opts_json.txt'), 'utf8')
+                        .replace('{{input}}', cliSection);
+                    (0, core_1.debug)('Prompt: ' + PROMPT);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = (response?.data?.choices[0].text || '');
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'etc'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `etc` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'etc', 'cli_opts.json'), txt);
+                    }
+                }
+                if (!has['test/test.cli.js']) {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'test_cli_js.txt'), 'utf8')
+                        .replace('{{input}}', cliSection);
+                    (0, core_1.debug)('Prompt: ' + PROMPT);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = (response?.data?.choices[0].text || '');
+                        try {
+                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'test'));
+                        }
+                        catch (err) {
+                            (0, core_1.debug)('Unable to create `test` directory. Error: ' + err.message);
+                        }
+                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'test', 'test.cli.js'), txt);
+                    }
                 }
             }
             (0, core_1.setOutput)('dir', dir);
