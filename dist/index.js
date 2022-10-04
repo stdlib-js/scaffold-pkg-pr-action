@@ -37,6 +37,8 @@ const extract_cli_section_1 = __importDefault(require("./extract_cli_section"));
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
+const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
+const RE_JSDOC = /\/\*\*([\s\S]+?)\*\//;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
@@ -88,6 +90,76 @@ const SEE_ALSO = `
 
     See Also
     --------`;
+// FUNCTIONS //
+function writeToDisk(dir, filename, data) {
+    try {
+        (0, fs_1.mkdirSync)(dir);
+    }
+    catch (err) {
+        (0, core_1.debug)(`Unable to create ${dir} directory. Error: ${err.message}.`);
+    }
+    (0, fs_1.writeFileSync)((0, path_1.join)(dir, filename), data);
+}
+function writePackageJSON(dir, pkg, cli) {
+    const pkgJSON = {
+        'name': `@stdlib/${pkg}`,
+        "version": "0.0.0",
+        "description": "",
+        "license": "Apache-2.0",
+        "author": {
+            "name": "The Stdlib Authors",
+            "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+        },
+        "contributors": [
+            {
+                "name": "The Stdlib Authors",
+                "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
+            }
+        ],
+        ...(cli ? {
+            "bin": {
+                [cli]: "./bin/cli"
+            }
+        } : {}),
+        "main": "./lib",
+        "directories": {
+            "benchmark": "./benchmark",
+            "doc": "./docs",
+            "example": "./examples",
+            "lib": "./lib",
+            "test": "./test"
+        },
+        "types": "./docs/types",
+        "scripts": {},
+        "homepage": "https://github.com/stdlib-js/stdlib",
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/stdlib-js/stdlib.git"
+        },
+        "bugs": {
+            "url": "https://github.com/stdlib-js/stdlib/issues"
+        },
+        "dependencies": {},
+        "devDependencies": {},
+        "engines": {
+            "node": ">=0.10.0",
+            "npm": ">2.7.0"
+        },
+        "os": [
+            "aix",
+            "darwin",
+            "freebsd",
+            "linux",
+            "macos",
+            "openbsd",
+            "sunos",
+            "win32",
+            "windows"
+        ],
+        "keywords": []
+    };
+    (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
+}
 // MAIN //
 /**
 * Main function.
@@ -146,6 +218,7 @@ async function main() {
                 'etc/cli_opts.json': false,
                 'examples/index.js': false,
                 'lib/index.js': false,
+                'lib/main.js': false,
                 'test/test.js': false,
                 'test/test.cli.js': false
             };
@@ -177,6 +250,9 @@ async function main() {
                 if (f.filename.endsWith('lib/index.js')) {
                     has['lib/index.js'] = true;
                 }
+                if (f.filename.endsWith('lib/main.js')) {
+                    has['lib/main.js'] = true;
+                }
                 if (f.filename.endsWith('test/test.js')) {
                     has['test/test.js'] = true;
                 }
@@ -187,6 +263,8 @@ async function main() {
             const usageSection = (0, extract_usage_section_1.default)(readmeText);
             const examplesSection = (0, extract_examples_section_1.default)(readmeText);
             const cliSection = (0, extract_cli_section_1.default)(readmeText);
+            let jsdoc;
+            let cli;
             if (!has['docs/repl.txt']) {
                 (0, core_1.debug)('PR does not contain a new package\'s REPL file. Scaffolding...');
                 try {
@@ -198,13 +276,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = (response?.data?.choices[0].text || '') + SEE_ALSO;
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `docs` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'docs', 'repl.txt'), txt);
+                        writeToDisk((0, path_1.join)(dir, 'docs'), 'repl.txt', txt);
                     }
                 }
                 catch (err) {
@@ -223,18 +295,90 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'lib'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `lib` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'lib', 'index.js'), txt);
+                        writeToDisk((0, path_1.join)(dir, 'lib'), 'index.js', txt);
                     }
                 }
                 catch (err) {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
+                }
+            }
+            if (!has['lib/main.js']) {
+                (0, core_1.debug)('PR does not contain a new package\'s main file. Scaffolding...');
+                try {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'main_js.txt'), 'utf8')
+                        .replace('{{input}}', usageSection);
+                    (0, core_1.debug)('Prompt: ' + PROMPT);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        let txt = response?.data?.choices[0].text || '';
+                        jsdoc = RE_JSDOC.exec(txt);
+                        txt = LICENSE_TXT + '\n\'use strict\';\n' + txt;
+                        writeToDisk((0, path_1.join)(dir, 'lib'), 'main.js', txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.debug)(err);
+                    (0, core_1.setFailed)(err.message);
+                }
+            }
+            if (jsdoc) {
+                if (!has['benchmark/benchmark.js']) {
+                    try {
+                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt'), 'utf8')
+                            .replace('{{input}}', jsdoc[1]);
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': PROMPT
+                        });
+                        if (response.data && response.data.choices) {
+                            const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                            writeToDisk((0, path_1.join)(dir, 'benchmark'), 'benchmark.js', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                }
+                let ts = '';
+                if (!has['docs/types/index.d.ts']) {
+                    try {
+                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt'), 'utf8')
+                            .replace('{{input}}', jsdoc[1]);
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': PROMPT
+                        });
+                        if (response.data && response.data.choices) {
+                            ts = response?.data?.choices[0].text || '';
+                            const txt = LICENSE_TXT + '\n// TypeScript Version: 2.0\n' + ts;
+                            writeToDisk((0, path_1.join)(dir, 'docs', 'types'), 'index.d.ts', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                }
+                if (!has['docs/types/test.ts']) {
+                    try {
+                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_ts.txt'), 'utf8')
+                            .replace('{{input}}', ts);
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': PROMPT
+                        });
+                        if (response.data && response.data.choices) {
+                            let txt = response?.data?.choices[0].text || '';
+                            txt = LICENSE_TXT + txt;
+                            writeToDisk((0, path_1.join)(dir, 'docs', 'types'), 'test.ts', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
                 }
             }
             if (!has['examples/index.js']) {
@@ -249,13 +393,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'examples'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `examples` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'examples', 'index.js'), txt);
+                        writeToDisk((0, path_1.join)(dir, 'examples'), 'index.js', txt);
                     }
                 }
                 catch (err) {
@@ -264,6 +402,7 @@ async function main() {
                 }
             }
             if (cliSection) {
+                cli = RE_CLI_ALIAS.exec(cliSection);
                 if (!has['bin/cli']) {
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'cli.txt'), 'utf8')
                         .replace('{{input}}', cliSection);
@@ -274,26 +413,14 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = (response?.data?.choices[0].text || '');
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'bin'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `bin` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'bin', 'cli'), txt);
+                        writeToDisk((0, path_1.join)(dir, 'bin'), 'cli', txt);
                     }
                 }
                 if (!has['docs/usage.txt']) {
                     const matches = RE_CLI_USAGE.exec(cliSection);
                     if (matches) {
-                        const txt = matches[1] + '\n\n';
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `docs` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'docs', 'usage.txt'), txt);
+                        const txt = matches[1] + '\n';
+                        writeToDisk((0, path_1.join)(dir, 'docs'), 'usage.txt', txt);
                     }
                 }
                 if (!has['etc/cli_opts.json']) {
@@ -304,14 +431,8 @@ async function main() {
                         'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
-                        const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '');
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'etc'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `etc` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'etc', 'cli_opts.json'), txt);
+                        const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '') + '\n';
+                        writeToDisk((0, path_1.join)(dir, 'etc'), 'cli_opts.json', txt);
                     }
                 }
                 if (!has['test/test.cli.js']) {
@@ -320,23 +441,20 @@ async function main() {
                     (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await openai.createCompletion({
                         ...OPENAI_SETTINGS,
+                        'max_tokens': OPENAI_SETTINGS.max_tokens * 2,
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
                         const txt = (response?.data?.choices[0].text || '');
-                        try {
-                            (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'test'));
-                        }
-                        catch (err) {
-                            (0, core_1.debug)('Unable to create `test` directory. Error: ' + err.message);
-                        }
-                        (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'test', 'test.cli.js'), txt);
+                        writeToDisk((0, path_1.join)(dir, 'test'), 'test.cli.js', txt);
                     }
                 }
             }
+            const path = (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/');
             (0, core_1.setOutput)('dir', dir);
-            (0, core_1.setOutput)('path', (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/'));
+            (0, core_1.setOutput)('path', path);
             (0, core_1.setOutput)('alias', usageSection.substring(0, usageSection.indexOf(' =')));
+            writePackageJSON(dir, path, cli ? cli[1] : null);
             break;
         }
         case 'issue_comment': {
@@ -373,64 +491,7 @@ async function main() {
                 (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'bin'));
                 (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'etc'));
             }
-            const pkgJSON = {
-                'name': `@stdlib/${path}`,
-                "version": "0.0.0",
-                "description": "",
-                "license": "Apache-2.0",
-                "author": {
-                    "name": "The Stdlib Authors",
-                    "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
-                },
-                "contributors": [
-                    {
-                        "name": "The Stdlib Authors",
-                        "url": "https://github.com/stdlib-js/stdlib/graphs/contributors"
-                    }
-                ],
-                ...(cli ? {
-                    "bin": {
-                        [cli]: "./bin/cli"
-                    }
-                } : {}),
-                "main": "./lib",
-                "directories": {
-                    "benchmark": "./benchmark",
-                    "doc": "./docs",
-                    "example": "./examples",
-                    "lib": "./lib",
-                    "test": "./test"
-                },
-                "types": "./docs/types",
-                "scripts": {},
-                "homepage": "https://github.com/stdlib-js/stdlib",
-                "repository": {
-                    "type": "git",
-                    "url": "git://github.com/stdlib-js/stdlib.git"
-                },
-                "bugs": {
-                    "url": "https://github.com/stdlib-js/stdlib/issues"
-                },
-                "dependencies": {},
-                "devDependencies": {},
-                "engines": {
-                    "node": ">=0.10.0",
-                    "npm": ">2.7.0"
-                },
-                "os": [
-                    "aix",
-                    "darwin",
-                    "freebsd",
-                    "linux",
-                    "macos",
-                    "openbsd",
-                    "sunos",
-                    "win32",
-                    "windows"
-                ],
-                "keywords": []
-            };
-            (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
+            writePackageJSON(pkgDir, path, cli);
             (0, core_1.setOutput)('dir', pkgDir);
             (0, core_1.setOutput)('path', path);
             (0, core_1.setOutput)('alias', alias);
@@ -450,7 +511,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '') + '\n';
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'examples', 'index.js'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'examples'), 'index.js', txt);
                 }
             }
             catch (err) {
@@ -464,7 +525,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = README_LICENSE + (response?.data?.choices[0].text || '');
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'README.md'), txt);
+                    writeToDisk(pkgDir, 'README.md', txt);
                 }
             }
             catch (err) {
@@ -478,7 +539,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'benchmark'), 'benchmark.js', txt);
                 }
             }
             catch (err) {
@@ -492,7 +553,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'lib', 'index.js'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'index.js', txt);
                 }
             }
             catch (err) {
@@ -506,7 +567,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.js', txt);
                 }
             }
             catch (err) {
@@ -520,7 +581,7 @@ async function main() {
                 });
                 if (response.data && response.data.choices) {
                     const txt = response?.data?.choices[0].text || '';
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'repl.txt'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'docs'), 'repl.txt', txt);
                 }
             }
             catch (err) {
@@ -536,7 +597,7 @@ async function main() {
                 if (response.data && response.data.choices) {
                     ts = response?.data?.choices[0].text || '';
                     const txt = LICENSE_TXT + '\n// TypeScript Version: 2.0\n' + ts;
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'types', 'index.d.ts'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'docs', 'types'), 'index.d.ts', txt);
                 }
             }
             catch (err) {
@@ -551,7 +612,7 @@ async function main() {
                 if (response.data && response.data.choices) {
                     let txt = response?.data?.choices[0].text || '';
                     txt = LICENSE_TXT + txt;
-                    (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'types', 'test.ts'), txt);
+                    writeToDisk((0, path_1.join)(pkgDir, 'docs', 'types'), 'test.ts', txt);
                 }
             }
             catch (err) {
@@ -567,7 +628,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = response?.data?.choices[0].text || '';
-                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'docs', 'usage.txt'), txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'docs'), 'usage.txt', txt);
                     }
                 }
                 catch (err) {
@@ -581,7 +642,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const json = response?.data?.choices[0].text || '';
-                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'etc', 'cli_opts.json'), json);
+                        writeToDisk((0, path_1.join)(pkgDir, 'etc'), 'cli_opts.json', json);
                     }
                 }
                 catch (err) {
@@ -595,7 +656,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'bin', 'cli'), txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'bin'), 'cli', txt);
                     }
                 }
                 catch (err) {
@@ -609,7 +670,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        (0, fs_1.writeFileSync)((0, path_1.join)(pkgDir, 'test', 'test.cli.js'), txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.cli.js', txt);
                     }
                 }
                 catch (err) {

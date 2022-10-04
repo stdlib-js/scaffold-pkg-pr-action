@@ -1,0 +1,347 @@
+Input (README.md):
+curry = require( '@stdlib/utils/curry' );
+```
+
+#### curry( fcn\[, arity]\[, thisArg] )
+
+Transforms a function into a sequence of functions each accepting a single argument.
+
+```javascript
+function add( x, y ) {
+    return x + y;
+}
+
+var fcn = curry( add );
+
+var sum = fcn( 2 )( 3 );
+// returns 5
+```
+
+By default, `arity` is equal to `fcn.length`. For functions without explicit parameters, provide an `arity` argument.
+
+```javascript
+function add() {
+    return arguments[ 0 ] + arguments[ 1 ];
+}
+
+var fcn = curry( add, 2 );
+
+var sum = fcn( 2 )( 3 );
+// returns 5
+```
+
+To specify the curried function execution context, provide a `thisArg` argument.
+
+```javascript
+var obj = {
+    'name': 'Ada',
+    'greet': function greet( word1, word2 ) {
+        return word1 + ' ' + word2 + ', ' + this.name + '!';
+    }
+};
+
+var fcn = curry( obj.greet, obj );
+
+var str = fcn( 'Hello' )( 'there' );
+// returns 'Hello there, Ada!'
+```
+
+The function supports providing both an `arity` and execution context.
+
+```javascript
+var obj = {
+    'name': 'Ada',
+    'greet': function greet() {
+        return arguments[ 0 ] + ' ' + arguments[ 1 ] + ', ' + this.name + '!';
+    }
+};
+
+var fcn = curry( obj.greet, 2, obj );
+
+var str = fcn( 'Hello' )( 'there' );
+// returns 'Hello there, Ada!'
+```
+
+Output (main.js):
+// MODULES //
+
+// TODO: Load required modules...
+
+
+// MAIN //
+
+/**
+* Transforms a function into a sequence of functions each accepting a single argument.
+*
+* @param {Function} fcn - function to curry
+* @param {PositiveInteger} [arity=fcn.length] - number of parameters
+* @param {*} [thisArg] - evaluation context
+* @throws {TypeError} first argument must be a function
+* @throws {TypeError} first argument must be a function having at least one parameter
+* @throws {TypeError} `arity` argument must be a positive integer
+* @returns {Function} curry function
+*
+* @example
+* function add( x, y ) {
+*     return x + y;
+* }
+*
+* var f = curry( add );
+*
+* var sum = f( 2 )( 3 );
+* // returns 5
+*/
+function curry( fcn, arity, thisArg ) {
+    // TODO: Add implementation...
+}
+
+
+// EXPORTS //
+
+module.exports = curry;
+Input (README.md):
+iterSquareWave = require( '@stdlib/simulate/iter/square-wave' );
+```
+
+#### iterSquareWave( \[options] )
+
+Returns an iterator which generates a square wave.
+
+```javascript
+var it = iterSquareWave();
+// returns <Object>
+
+var v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+// ...
+```
+
+The returned iterator protocol-compliant object has the following properties:
+
+-   **next**: function which returns an iterator protocol-compliant object containing the next iterated value (if one exists) assigned to a `value` property and a `done` property having a `boolean` value indicating whether the iterator is finished.
+-   **return**: function which closes an iterator and returns a single (optional) argument in an iterator protocol-compliant object.
+
+The function supports the following `options`:
+
+-   **period**: period (i.e., the number of iterations before a square wave repeats). This must be an even integer in order to ensure a `50%` duty cycle. Default: `10`.
+-   **min**: minimum amplitude. Default: `-1.0`.
+-   **max**: maximum amplitude. Default: `1.0`.
+-   **offset**: phase offset (in units of iterations; zero-based). A negative offset translates a waveform to the left. A positive offset translates a waveform to the right. Default: `0`.
+-   **iter**: number of iterations. Default: `1e308`.
+
+By default, the function returns an iterator which generates a square wave that repeats every `10` iterations. To specify an alternative period, set the `period` option.
+
+```javascript
+var opts = {
+    'period': 4
+};
+
+var it = iterSquareWave( opts );
+// returns <Object>
+
+var v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns 1.0
+
+// ...
+```
+
+To adjust at what point the iterator begins in the waveform cycle, set the phase `offset` option. For example, to translate the waveform to the left,
+
+```javascript
+var opts = {
+    'period': 6,
+    'offset': -2
+};
+
+var it = iterSquareWave( opts );
+// returns <Object>
+
+var v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns 1.0
+
+// ...
+```
+
+To translate the waveform to the right,
+
+```javascript
+var opts = {
+    'period': 6,
+    'offset': 2
+};
+
+var it = iterSquareWave( opts );
+// returns <Object>
+
+var v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns -1.0
+
+v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+// ...
+```
+
+By default, the function returns an infinite iterator (i.e., an iterator which never ends). To limit the number of iterations, set the `iter` option.
+
+```javascript
+var opts = {
+    'iter': 2
+};
+var it = iterSquareWave( opts );
+// returns <Object>
+
+var v = it.next().value;
+// returns 1.0
+
+v = it.next().value;
+// returns 1.0
+
+var bool = it.next().done;
+// returns true
+```
+Output (main.js):
+// MODULES //
+
+// TODO: Load required modules...
+
+
+// MAIN //
+
+/**
+* Returns an iterator which generates a square wave.
+*
+* @param {Options} [options] - function options
+* @param {PositiveInteger} [options.period=10] - number of iterations before a square wave repeats (this must be a positive even integer)
+* @param {number} [options.min=-1.0] - minimum amplitude
+* @param {number} [options.max=1.0] - maximum amplitude
+* @param {integer} [options.offset=0] - phase offset (in units of iterations; zero-based)
+* @param {NonNegativeInteger} [options.iter=1e308] - number of iterations
+* @throws {TypeError} options argument must be an object
+* @throws {TypeError} must provide valid options
+* @returns {Iterator} iterator
+*
+* @example
+* var opts = {
+*     'period': 4
+* };
+*
+* var iter = iterSquareWave( opts );
+*
+* var v = iter.next().value;
+* // returns 1.0
+*
+* v = iter.next().value;
+* // returns 1.0
+*
+* v = iter.next().value;
+* // returns -1.0
+*
+* // ...
+*/
+function iterSquareWave( options ) {
+    // TODO: Add implementation...
+}
+
+
+// EXPORTS //
+
+module.exports = iterSquareWave;
+Input (README.md):
+capitalize = require( '@stdlib/string/capitalize' );
+```
+
+#### capitalize( str )
+
+Capitalizes the first character in a string.
+
+```javascript
+var out = capitalize( 'last man standing' );
+// returns 'Last man standing'
+
+out = capitalize( 'Hidden Treasures' );
+// returns 'Hidden Treasures'
+```
+Output (main.js):
+// MODULES //
+
+// TODO: Load required modules...
+
+
+// MAIN //
+
+/**
+* Capitalizes the first character in a string.
+*
+* @param {string} str - input string
+* @throws {TypeError} must provide a string
+* @returns {string} capitalized string
+*
+* @example
+* var out = capitalize( 'last man standing' );
+* // returns 'Last man standing'
+*
+* @example
+* var out = capitalize( 'presidential election' );
+* // returns 'Presidential election'
+*
+* @example
+* var out = capitalize( 'javaScript' );
+* // returns 'JavaScript'
+*
+* @example
+* var out = capitalize( 'Hidden Treasures' );
+* // returns 'Hidden Treasures'
+*/
+function capitalize( str ) {
+	// TODO: Add implementation...
+}
+
+
+// EXPORTS //
+
+module.exports = capitalize;
+Input (README.md):
+{{input}}
+
+Output (main.js):
