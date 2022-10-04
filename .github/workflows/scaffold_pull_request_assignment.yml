@@ -57,7 +57,7 @@ jobs:
       - name: 'Commit changes'
         run: |
           git add -A
-          git commit -m "Scaffold ${{ steps.scaffold.outputs.path }}"
+          git commit -m "Scaffold `${{ steps.scaffold.outputs.path }}`"
           
       # Push changes:
       - name: 'Push changes'
