@@ -36,6 +36,7 @@ import extractCLISection from './extract_cli_section';
 
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
+const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const OPENAI_SETTINGS = {
 	'model': 'code-davinci-002',
@@ -289,15 +290,9 @@ async function main(): Promise<void> {
 				}
 			}
 			if ( !has[ 'docs/usage.txt' ] ) {
-				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'usage_txt.txt' ), 'utf8' )
-					.replace( '{{input}}', cliSection );
-				debug( 'Prompt: '+PROMPT );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
-					'prompt': PROMPT
-				});
-				if ( response.data && response.data.choices ) {
-					const txt = ( response?.data?.choices[ 0 ].text || '' );
+				const matches = RE_CLI_USAGE.exec( cliSection );
+				if ( matches ) {
+					const txt = matches[ 1 ] + '\n';
 					try {
 						mkdirSync( join( dir, 'docs' ) );
 					}
