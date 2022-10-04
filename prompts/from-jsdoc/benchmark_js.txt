@@ -1,20 +1,18 @@
 Input (jsdoc):
 /**
-* Tests if a double-precision floating-point numeric value is a negative finite number.
+* Tests if a value is an anagram.
 *
-* @param {number} x - value to test
-* @returns {boolean} boolean indicating whether the value is a negative finite number
+* @param {string} str - comparison string
+* @param {*} x - value to test
+* @throws {TypeError} first argument must be a string
+* @returns {boolean} boolean indicating if a value is an anagram
 *
 * @example
-* var bool = isNegativeFinite( -3.14 );
+* var bool = isAnagram( 'I am a weakish speller', 'William Shakespeare' );
 * // returns true
 *
 * @example
-* var bool = isNegativeFinite( -Infinity );
-* // returns false
-*
-* @example
-* var bool = isNegativeFinite( 2.0 );
+* var bool = isAnagram( 'bat', 'tabba' );
 * // returns false
 */
 
@@ -22,29 +20,31 @@ Output (benchmark/benchmark.js):
 // MODULES //
 
 var bench = require( '@stdlib/bench' );
-var randu = require( '@stdlib/random/base/randu' );
 var isBoolean = require( '@stdlib/assert/is-boolean' ).isPrimitive;
 var pkg = require( './../package.json' ).name;
-var isNegativeFinite = require( './../lib' );
+var isAnagram = require( './../lib' );
 
 
 // MAIN //
 
 bench( pkg, function benchmark( b ) {
-	var x;
-	var y;
+	var values;
+	var bool;
 	var i;
+
+	values = [
+		// TODO: add benchmark values
+	];
 
 	b.tic();
 	for ( i = 0; i < b.iterations; i++ ) {
-		x = (randu()*200.0) - 100.0;
-		y = isNegativeFinite( x );
-		if ( !isBoolean( y ) ) {
+		bool = isAnagram( 'bat', values[ i % values.length ] );
+		if ( typeof bool !== 'boolean' ) {
 			b.fail( 'should return a boolean' );
 		}
 	}
 	b.toc();
-	if ( !isBoolean( y ) ) {
+	if ( !isBoolean( bool ) ) {
 		b.fail( 'should return a boolean' );
 	}
 	b.pass( 'benchmark finished' );

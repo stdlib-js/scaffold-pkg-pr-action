@@ -38,7 +38,7 @@ const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
-const RE_JSDOC = /\/\*\*([\s\S]+?)\*\//;
+const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
@@ -329,7 +329,7 @@ async function main() {
                 if (!has['benchmark/benchmark.js']) {
                     try {
                         const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt'), 'utf8')
-                            .replace('{{input}}', jsdoc[1]);
+                            .replace('{{input}}', jsdoc[0]);
                         const response = await openai.createCompletion({
                             ...OPENAI_SETTINGS,
                             'prompt': PROMPT
@@ -347,7 +347,7 @@ async function main() {
                 if (!has['docs/types/index.d.ts']) {
                     try {
                         const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt'), 'utf8')
-                            .replace('{{input}}', jsdoc[1]);
+                            .replace('{{input}}', jsdoc[0]);
                         const response = await openai.createCompletion({
                             ...OPENAI_SETTINGS,
                             'prompt': PROMPT
@@ -441,7 +441,7 @@ async function main() {
                     (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await openai.createCompletion({
                         ...OPENAI_SETTINGS,
-                        'max_tokens': OPENAI_SETTINGS.max_tokens * 2,
+                        'max_tokens': OPENAI_SETTINGS.max_tokens * 4,
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
