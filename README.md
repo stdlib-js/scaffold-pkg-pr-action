@@ -22,13 +22,23 @@ limitations under the License.
 
 # Scaffold Package
 
-> GitHub action for creating a pull request with scaffolded package contents based off a comment.
+> GitHub action for scaffolding a new `stdlib` package via GPT-3.
 
 ---
 
 ## Description
 
-This action creates a pull request with with a scaffolded package based off a comment. The comment should be of the form:
+This repository contains a GitHub action for scaffolding a new `stdlib` package via GPT-3. 
+
+There are currently two supported ways of using the action:
+
+### 1. Assigning a PR to the `stdlib-bot` account when a `README.md` file is present
+
+Assigning a pull request for a new package to the `stdlib-bot` user account. The action will then automatically scaffold a new package contents based off the `README.md` file of the pull request. The action will then commit the scaffolded package contents to the pull request branch and push the changes to the pull request. This assumes that the pull request branch contains a finished `README.md` file for the new package (readme-driven development).
+
+### 2. Add a scaffold comment to a RFC issue thread to scaffold a new package PR based on the RFC
+
+In a GitHub RFC issue, one may add a scaffolding comment. The comment should contain the JSDoc of all the exports of the package. The action will then automatically scaffold  package contents based off the comment, commit the scaffolded package contents to a new branch and open a pull request. The comment should be of the form:
 
 ````md
 ```yaml
@@ -118,6 +128,7 @@ jobs:
 ## Inputs
 
 -   `OPENAI_API_KEY`: OpenAI API key.
+-   `GITHUB_TOKEN`: GitHub token.
 
 ## Outputs
 

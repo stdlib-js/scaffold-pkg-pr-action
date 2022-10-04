@@ -1,5 +1,5 @@
 name: Scaffold Pkg PR
-description: Action for creating a pull request with scaffolded package contents based off a comment.
+description: Action for scaffolding a new `stdlib` package via GPT-3.
 author: Philipp Burckhardt <pburckhardt@outlook.com>
 
 inputs:
