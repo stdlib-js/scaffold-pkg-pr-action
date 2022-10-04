@@ -29,6 +29,7 @@ const fs_1 = require("fs");
 const yaml_1 = require("yaml");
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
 const string_substring_after_1 = __importDefault(require("@stdlib/string-substring-after"));
+const string_trim_1 = __importDefault(require("@stdlib/string-trim"));
 const extract_examples_section_1 = __importDefault(require("./extract_examples_section"));
 const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
 const extract_cli_section_1 = __importDefault(require("./extract_cli_section"));
@@ -309,7 +310,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = (response?.data?.choices[0].text || '');
+                        const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '');
                         try {
                             (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'etc'));
                         }

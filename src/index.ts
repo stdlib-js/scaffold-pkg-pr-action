@@ -26,6 +26,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
+import trim from '@stdlib/string-trim';
 import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 import extractCLISection from './extract_cli_section';
@@ -315,7 +316,7 @@ async function main(): Promise<void> {
 					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = ( response?.data?.choices[ 0 ].text || '' );
+					const txt = trim( response?.data?.choices[ 0 ].text || '' );
 					try {
 						mkdirSync( join( dir, 'etc' ) );
 					}
