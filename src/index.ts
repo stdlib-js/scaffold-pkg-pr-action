@@ -303,12 +303,11 @@ async function main(): Promise<void> {
 				}
 			}
 			if ( !has[ 'etc/cli_opts.json' ] ) {
-				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'cli_opts_json.txt' ), 'utf8' )
-					.replace( '{{input}}', cliSection );
-				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
 					...OPENAI_SETTINGS,
-					'prompt': PROMPT
+					'model': 'davinci:ft-carnegie-mellon-university:readme-cli-to-opts-2022-10-04-21-04-27',
+					'prompt': usageSection + '\n|>|\n\n',
+					'stop': [ 'END' ]
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = trim( response?.data?.choices[ 0 ].text || '' );
