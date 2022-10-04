@@ -72,8 +72,8 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Based off the `README.md` file, contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package have been generated and pushed to the pull request branch.
+            Based off the `README.md` file, the [stdlib-bot][https://github.com/stdlib-bot] has generated contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package and pushed them to the pull request branch.
             
             ## Notes
             
-            *   :warning: The package was scaffolded using the stdlib bot, which uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
+            *   :warning: The stdlib-bot uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
