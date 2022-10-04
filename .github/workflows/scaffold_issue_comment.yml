@@ -18,7 +18,7 @@
 #/
 
 # Workflow name:
-name: Scaffold Triggered by Issue Comment
+name: Scaffold Package via RFC Issue Comment
 
 # Workflow triggers:
 on:
