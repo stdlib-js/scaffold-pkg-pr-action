@@ -57,7 +57,7 @@ jobs:
       - name: 'Commit changes'
         run: |
           git add -A
-          git commit -m "Scaffold `${{ steps.scaffold.outputs.path }}`"
+          git commit -m "Scaffold ${{ steps.scaffold.outputs.path }} package"
           
       # Push changes:
       - name: 'Push changes'
@@ -72,7 +72,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Based off the `README.md` file, the [stdlib-bot][https://github.com/stdlib-bot] has generated contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package and pushed them to the pull request branch.
+            Based off the `README.md` file, the [stdlib-bot](https://github.com/stdlib-bot) has generated contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package and pushed them to the pull request branch.
             
             ## Notes
             
