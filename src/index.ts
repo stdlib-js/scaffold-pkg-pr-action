@@ -221,12 +221,10 @@ async function main(): Promise<void> {
 		if ( !has['lib/index.js'] ) {
 			debug( 'PR does not contain a new package\'s index file. Scaffolding...' );
 			try {
-				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'index_js.txt' ), 'utf8' )
-					.replace( '{{input}}', usageSection.replace( /(\n)+/g, '\n' ) );
-				debug( 'Prompt: '+PROMPT );
 				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
-					'prompt': PROMPT
+					'model': 'davinci:ft-carnegie-mellon-university:readme-to-index-2022-10-04-19-00-45',
+					'prompt': usageSection + '\n|>|\n\n',
+					'stop': [ 'END' ]
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
