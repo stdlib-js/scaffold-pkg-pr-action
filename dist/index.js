@@ -214,6 +214,7 @@ async function main() {
                 (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
                 try {
                     const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
                         'model': 'davinci:ft-carnegie-mellon-university:readme-to-index-2022-10-04-19-00-45',
                         'prompt': usageSection + '\n|>|\n\n',
                         'stop': ['END']
