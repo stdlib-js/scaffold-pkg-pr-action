@@ -364,7 +364,7 @@ async function main() {
                 }
                 if (!has['docs/types/test.ts']) {
                     try {
-                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_ts.txt'), 'utf8')
+                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-ts', 'test_ts.txt'), 'utf8')
                             .replace('{{input}}', ts);
                         const response = await openai.createCompletion({
                             ...OPENAI_SETTINGS,
