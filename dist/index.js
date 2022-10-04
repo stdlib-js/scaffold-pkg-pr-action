@@ -194,7 +194,7 @@ async function main() {
                         ...OPENAI_SETTINGS,
                         'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
                         'prompt': usageSection + examplesSection + '\n|>|\n\n',
-                        'stop': ['END']
+                        'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
                         const txt = (response?.data?.choices[0].text || '') + SEE_ALSO;
@@ -219,7 +219,7 @@ async function main() {
                         ...OPENAI_SETTINGS,
                         'model': 'davinci:ft-carnegie-mellon-university:readme-to-index-2022-10-04-19-00-45',
                         'prompt': usageSection + '\n|>|\n\n',
-                        'stop': ['END']
+                        'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
@@ -286,7 +286,7 @@ async function main() {
                 if (!has['docs/usage.txt']) {
                     const matches = RE_CLI_USAGE.exec(cliSection);
                     if (matches) {
-                        const txt = matches[1] + '\n';
+                        const txt = matches[1] + '\n\n';
                         try {
                             (0, fs_1.mkdirSync)((0, path_1.join)(dir, 'docs'));
                         }
@@ -300,8 +300,8 @@ async function main() {
                     const response = await openai.createCompletion({
                         ...OPENAI_SETTINGS,
                         'model': 'davinci:ft-carnegie-mellon-university:readme-cli-to-opts-2022-10-04-21-04-27',
-                        'prompt': usageSection + '\n|>|\n\n',
-                        'stop': ['END']
+                        'prompt': cliSection + '\n|>|\n\n',
+                        'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
                         const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '');
