@@ -433,7 +433,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(dir, 'bin'), 'cli', txt);
                     }
                 }
@@ -676,7 +676,7 @@ async function main() {
                         'prompt': CLI_FILE.replace('{{jsdoc}}', jsCode[1])
                     });
                     if (response.data && response.data.choices) {
-                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'bin'), 'cli', txt);
                     }
                 }
