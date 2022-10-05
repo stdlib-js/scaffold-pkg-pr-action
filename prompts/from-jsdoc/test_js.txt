@@ -57,6 +57,63 @@ tape( 'the function throws an error if not provided a string', function test( t 
 	}
 });
 
+// TODO: Add more tests...
+
+Input (jsdoc):
+/**
+* Tests if a value is a binary string.
+*
+* @param {*} str - value to test
+* @returns {boolean} boolean indicating if an input value is a binary string
+*
+* @example
+* var bool = isBinaryString( '1000101' );
+* // returns true
+*
+* @example
+* var bool = isBinaryString( 'beep' );
+* // returns false
+*
+* @example
+* var bool = isBinaryString( '' );
+* // returns false
+*/
+
+Output (test.js):
+// MODULES //
+
+var tape = require( 'tape' );
+var isBinaryString = require( './../lib' );
+
+
+// TESTS //
+
+tape( 'main export is a function', function test( t ) {
+	t.ok( true, __filename );
+	t.equal( typeof isBinaryString, 'function', 'main export is a function' );
+	t.end();
+});
+
+tape( 'the function returns `true` if provided a binary string', function test( t ) {
+	var values;
+	var i;
+
+	values = [
+		'0',
+		'1',
+		'10101',
+		'000000000000000000000000000000000000000000000000000000000000000000000000000000',
+		'11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'
+	];
+
+	for ( i = 0; i < values.length; i++ ) {
+		t.equal( isBinaryString( values[i] ), true, 'returns true' );
+	}
+	t.end();
+});
+
+// TODO: Add more tests...
+
 Input (jsdoc):
 {{input}}
 

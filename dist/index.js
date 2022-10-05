@@ -401,6 +401,23 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
             }
+            if (!has['test/test.js']) {
+                try {
+                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'test_js.txt'), 'utf8')
+                        .replace('{{input}}', usageSection);
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': PROMPT
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
+                        writeToDisk((0, path_1.join)(dir, 'test'), 'test.js', txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+            }
             if (cliSection) {
                 cli = RE_CLI_ALIAS.exec(cliSection);
                 if (!has['bin/cli']) {
@@ -412,7 +429,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = (response?.data?.choices[0].text || '');
+                        const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(dir, 'bin'), 'cli', txt);
                     }
                 }
@@ -445,7 +462,7 @@ async function main() {
                         'prompt': PROMPT
                     });
                     if (response.data && response.data.choices) {
-                        const txt = (response?.data?.choices[0].text || '');
+                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(dir, 'test'), 'test.cli.js', txt);
                     }
                 }
