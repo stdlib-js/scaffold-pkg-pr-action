@@ -47,7 +47,8 @@ const OPENAI_SETTINGS = {
     'top_p': 1,
     'frequency_penalty': 0,
     'presence_penalty': 0,
-    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output (']
+    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output ('],
+    'user': github_1.context.actor
 };
 const LICENSE_TXT = `/*
 * @license Apache-2.0
@@ -181,6 +182,11 @@ async function main() {
     const workDir = (0, path_1.join)(process.env.GITHUB_WORKSPACE);
     (0, core_1.debug)('Working directory: ' + workDir);
     (0, core_1.debug)('Prompts directory: ' + PROMPTS_DIR);
+    // Bail if the action is triggered from outside of the `stdlib-js' organization:
+    const org = github_1.context.repo.owner;
+    if (org !== 'stdlib-js') {
+        return (0, core_1.setFailed)('Action is for internal use and must be triggered from within the `stdlib-js` organization.');
+    }
     switch (github_1.context.eventName) {
         case 'pull_request': {
             // Check whether PR was assigned to the "stdlib-bot" user:
