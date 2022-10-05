@@ -98,6 +98,10 @@ function writeToDisk(dir, filename, data) {
     catch (err) {
         (0, core_1.debug)(`Unable to create ${dir} directory. Error: ${err.message}.`);
     }
+    // Ensure that there is a trailing newline:
+    if (data[data.length - 1] !== '\n') {
+        data += '\n';
+    }
     (0, fs_1.writeFileSync)((0, path_1.join)(dir, filename), data);
 }
 function writePackageJSON(dir, pkg, cli) {

@@ -101,6 +101,10 @@ function writeToDisk( dir: string, filename: string, data: string ): void {
 	catch ( err ) {
 		debug( `Unable to create ${dir} directory. Error: ${err.message}.` );
 	}
+	// Ensure that there is a trailing newline:
+	if ( data[ data.length-1 ] !== '\n' ) {
+		data += '\n';
+	}
 	writeFileSync( join( dir, filename ), data );
 }
 
