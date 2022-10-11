@@ -18,7 +18,7 @@
 #/
 
 # Workflow name:
-name: Scaffold Package
+name: Scaffold Package via Pull Request Assignment
 
 # Workflow triggers:
 on:
@@ -65,3 +65,15 @@ jobs:
           SLUG=${{ github.repository }}
           echo "Pushing changes to $SLUG..."
           git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" HEAD:${{ steps.scaffold.outputs.path }}
+          
+      # Add a comment to the pull request:
+      - name: 'Add comment to pull request'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Based off the `README.md` file, the [stdlib-bot](https://github.com/stdlib-bot) has generated contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.scaffold.outputs.path }}/${{ steps.scaffold.outputs.dir }}) package and pushed them to the pull request branch.
+            
+            ## Notes
+            
+            *   :warning: The stdlib-bot uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
