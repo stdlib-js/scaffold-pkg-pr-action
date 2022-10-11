@@ -179,7 +179,7 @@ function extractDepsFromIncludes(dependencies, code) {
     let match = RE_STDLIB_INCLUDES.exec(code);
     while (match !== null) {
         const include = match[1];
-        dependencies.add('@stdlib/' + (0, string_replace_1.default)(include, '_', '-'));
+        dependencies.add(`"@stdlib/${(0, string_replace_1.default)(include, '_', '-')}"`);
         match = RE_STDLIB_INCLUDES.exec(code);
     }
     return dependencies;
@@ -820,8 +820,8 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
                 let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
-                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n'));
-                manifest = (0, string_replace_1.default)(manifest, '{{src}}', '\'./src/' + aliasMatch[1] + '.c\'');
+                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\t\t\t\t\n'));
+                manifest = (0, string_replace_1.default)(manifest, '{{src}}', '"./src/' + aliasMatch[1] + '.c"');
                 writeToDisk(pkgDir, 'manifest.json', manifest);
             }
             break;

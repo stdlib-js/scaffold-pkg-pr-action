@@ -185,7 +185,7 @@ function extractDepsFromIncludes( dependencies, code ) {
 	let match = RE_STDLIB_INCLUDES.exec( code );
 	while ( match !== null ) {
 		const include = match[ 1 ];
-		dependencies.add( '@stdlib/'+replace( include, '_', '-' ) );
+		dependencies.add( `"@stdlib/${replace( include, '_', '-' )}"` );
 		match = RE_STDLIB_INCLUDES.exec( code );
 	}
 	return dependencies;
@@ -824,8 +824,8 @@ async function main(): Promise<void> {
 				setFailed( err.message );
 			}
 			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
-			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\n' ) );
-			manifest = replace( manifest, '{{src}}', '\'./src/'+aliasMatch[ 1 ]+'.c\'' );
+			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\t\t\t\t\n' ) );
+			manifest = replace( manifest, '{{src}}', '"./src/'+aliasMatch[ 1 ]+'.c"' );
 			writeToDisk( pkgDir, 'manifest.json', manifest );
 			
 		}
