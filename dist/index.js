@@ -175,7 +175,7 @@ async function sleep(ms) {
 }
 function extractDepsFromIncludes(dependencies, code) {
     // Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
-    const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/;
+    const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/g;
     let match = RE_STDLIB_INCLUDES.exec(code);
     while (match !== null) {
         const include = match[1];
