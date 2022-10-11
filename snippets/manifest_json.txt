@@ -1,0 +1,77 @@
+{
+	"options": {
+		"task": "build"
+	},
+	"fields": [
+		{
+			"field": "src",
+			"resolve": true,
+			"relative": true
+		},
+		{
+			"field": "include",
+			"resolve": true,
+			"relative": true
+		},
+		{
+			"field": "libraries",
+			"resolve": false,
+			"relative": false
+		},
+		{
+			"field": "libpath",
+			"resolve": true,
+			"relative": false
+		}
+	],
+	"confs": [
+		{
+			"task": "build",
+			"src": [
+				{{src}}
+			],
+			"include": [
+				"./include"
+			],
+			"libraries": [
+				"-lm"
+			],
+			"libpath": [],
+			"dependencies": [
+				{{dependencies}}
+			]
+		},
+		{
+			"task": "benchmark",
+			"src": [
+				{{src}}
+			],
+			"include": [
+				"./include"
+			],
+			"libraries": [
+				"-lm"
+			],
+			"libpath": [],
+			"dependencies": [
+				{{dependencies}}
+			]
+		},
+		{
+			"task": "examples",
+			"src": [
+				{{src}}
+			],
+			"include": [
+				"./include"
+			],
+			"libraries": [
+				"-lm"
+			],
+			"libpath": [],
+			"dependencies": [
+				{{dependencies}}
+			]
+		}
+	]
+}

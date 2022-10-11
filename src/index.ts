@@ -22,7 +22,7 @@ import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { join } from 'path';
 import { Configuration, OpenAIApi } from 'openai';
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, fstat } from 'fs';
 import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
@@ -39,8 +39,11 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
+const RE_LAST_JSDOC = /(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
+const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
 const WAIT_TIME = 10000; // 10 seconds
+const CURRENT_YEAR =  String( currentYear() );
 const OPENAI_SETTINGS = {
 	'model': 'code-davinci-002',
 	'temperature': 0.7,
@@ -498,6 +501,9 @@ async function main(): Promise<void> {
 				}
 				await sleep( WAIT_TIME );
 			}
+			let stdinErrorFixture = readFileSync( join( SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt' ), 'utf8' );
+			stdinErrorFixture = stdinErrorFixture.replace( '{{year}}', CURRENT_YEAR );
+			writeToDisk( join( dir, 'test', 'fixtures' ), 'stdin_error.js.txt', stdinErrorFixture );
 		}
 		const path = substringAfter( dir, 'lib/node_modules/@stdlib/' );
 		setOutput( 'dir', dir );	
@@ -719,6 +725,49 @@ async function main(): Promise<void> {
 			}
 		}
 		break;
+	}
+	case 'workflow_dispatch': {
+		// Case: Workflow was manually triggered:
+		const pkgPath = getInput( 'pkg', { required: true });
+		const actionType = getInput( 'type', { required: true });
+		const pkgDir = join( workDir, 'lib', 'node_modules', '@stdlib', pkgPath );
+		
+		if ( actionType === 'native-addon' ) {
+			const main = readFileSync( join( pkgDir, 'lib', 'main.js' ), 'utf8' );
+			const jsdocMatch = main.match( RE_LAST_JSDOC );
+			const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
+			const aliasMatch = main.match( RE_EXPORT_NAME );
+			
+			mkdirSync( join( pkgDir, 'src' ) );
+			mkdirSync( join( pkgDir, 'include', 'stdlib', pkgPath ), {
+				'recursive': true
+			});
+
+			let makefile = readFileSync( join( SNIPPETS_DIR, 'src', 'Makefile.txt' ), 'utf8' );
+			makefile = makefile.replace( '{{year}}', CURRENT_YEAR );
+			writeToDisk( join( pkgDir, 'src' ), 'Makefile', makefile );
+			
+			let bindingGyp = readFileSync( join( SNIPPETS_DIR, 'binding_gyp.txt' ), 'utf8' );
+			bindingGyp = bindingGyp.replace( '{{year}}', CURRENT_YEAR );
+			writeToDisk( pkgDir, 'binding.gyp', bindingGyp );
+			
+			let includeGypi = readFileSync( join( SNIPPETS_DIR, 'include_gypi.txt' ), 'utf8' );
+			includeGypi = includeGypi.replace( '{{year}}', CURRENT_YEAR );
+			writeToDisk( pkgDir, 'include.gypi', includeGypi );
+			
+			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
+			manifest = manifest.replace( '{{dependencies}}', '' );
+			manifest = manifest.replace( '{{src}}', '' );
+			writeToDisk( pkgDir, 'manifest.json', manifest );
+			
+			let native = readFileSync( join( SNIPPETS_DIR, 'lib', 'native_js.txt' ), 'utf8' );
+			native = native.replace( '{{year}}', CURRENT_YEAR );
+			native = native.replace( '{{jsdoc}}', jsdocMatch[ 1 ] );
+			native = native.replace( '{{alias}}', aliasMatch[ 1 ] );
+			native = native.replace( '{{params}}', '' );
+			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
+		}
+		break;	
 	}
 	default:
 		setFailed( 'Unsupported event name: ' + context.eventName );

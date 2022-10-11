@@ -39,8 +39,11 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
+const RE_LAST_JSDOC = /(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
+const SNIPPETS_DIR = (0, path_1.join)(__dirname, '..', 'snippets');
 const WAIT_TIME = 10000; // 10 seconds
+const CURRENT_YEAR = String((0, time_current_year_1.default)());
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
     'temperature': 0.7,
@@ -492,6 +495,9 @@ async function main() {
                     }
                     await sleep(WAIT_TIME);
                 }
+                let stdinErrorFixture = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt'), 'utf8');
+                stdinErrorFixture = stdinErrorFixture.replace('{{year}}', CURRENT_YEAR);
+                writeToDisk((0, path_1.join)(dir, 'test', 'fixtures'), 'stdin_error.js.txt', stdinErrorFixture);
             }
             const path = (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/');
             (0, core_1.setOutput)('dir', dir);
@@ -719,6 +725,42 @@ async function main() {
                 catch (err) {
                     (0, core_1.setFailed)(err.message);
                 }
+            }
+            break;
+        }
+        case 'workflow_dispatch': {
+            // Case: Workflow was manually triggered:
+            const pkgPath = (0, core_1.getInput)('pkg', { required: true });
+            const actionType = (0, core_1.getInput)('type', { required: true });
+            const pkgDir = (0, path_1.join)(workDir, 'lib', 'node_modules', '@stdlib', pkgPath);
+            if (actionType === 'native-addon') {
+                const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
+                const jsdocMatch = main.match(RE_LAST_JSDOC);
+                const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
+                const aliasMatch = main.match(RE_EXPORT_NAME);
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'src'));
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), {
+                    'recursive': true
+                });
+                let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'src', 'Makefile.txt'), 'utf8');
+                makefile = makefile.replace('{{year}}', CURRENT_YEAR);
+                writeToDisk((0, path_1.join)(pkgDir, 'src'), 'Makefile', makefile);
+                let bindingGyp = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'binding_gyp.txt'), 'utf8');
+                bindingGyp = bindingGyp.replace('{{year}}', CURRENT_YEAR);
+                writeToDisk(pkgDir, 'binding.gyp', bindingGyp);
+                let includeGypi = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include_gypi.txt'), 'utf8');
+                includeGypi = includeGypi.replace('{{year}}', CURRENT_YEAR);
+                writeToDisk(pkgDir, 'include.gypi', includeGypi);
+                let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
+                manifest = manifest.replace('{{dependencies}}', '');
+                manifest = manifest.replace('{{src}}', '');
+                writeToDisk(pkgDir, 'manifest.json', manifest);
+                let native = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'lib', 'native_js.txt'), 'utf8');
+                native = native.replace('{{year}}', CURRENT_YEAR);
+                native = native.replace('{{jsdoc}}', jsdocMatch[1]);
+                native = native.replace('{{alias}}', aliasMatch[1]);
+                native = native.replace('{{params}}', '');
+                writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'native.js', native);
             }
             break;
         }
