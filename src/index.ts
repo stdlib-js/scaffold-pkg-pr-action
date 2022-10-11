@@ -40,7 +40,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
-const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
+const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
 const WAIT_TIME = 10000; // 10 seconds
@@ -770,7 +770,7 @@ async function main(): Promise<void> {
 			const paramsMatch = main.match( reParams );
 			
 			debug( 'Function parameters: '+paramsMatch[ 1 ] );
-			native = native.replace( '{{params}}', paramsMatch[ 1 ] );
+			native = replace( native, '{{params}}', paramsMatch[ 1 ] );
 			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
 		}
 		break;	
