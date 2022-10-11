@@ -27,6 +27,7 @@ import { parse } from 'yaml';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
 import trim from '@stdlib/string-trim';
+import replace from '@stdlib/string-replace';
 import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 import extractCLISection from './extract_cli_section';
@@ -757,15 +758,15 @@ async function main(): Promise<void> {
 			writeToDisk( pkgDir, 'include.gypi', includeGypi );
 			
 			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
-			manifest = manifest.replace( '{{dependencies}}', '' );
-			manifest = manifest.replace( '{{src}}', '' );
+			manifest = replace( manifest, '{{dependencies}}', '' );
+			manifest = replace( manifest, '{{src}}', '' );
 			writeToDisk( pkgDir, 'manifest.json', manifest );
 			
 			let native = readFileSync( join( SNIPPETS_DIR, 'lib', 'native_js.txt' ), 'utf8' );
 			native = native.replace( '{{year}}', CURRENT_YEAR );
-			native = native.replace( '{{jsdoc}}', jsdocMatch[ 1 ] );
-			native = native.replace( '{{alias}}', aliasMatch[ 1 ] );
-			const reParams = new RegExp( aliasMatch[ 1 ]+'\\(([^)]+)\\)', 'm' );
+			native = replace( native, '{{jsdoc}}', jsdocMatch[ 1 ] );
+			native = replace( native, '{{alias}}', aliasMatch[ 1 ] );
+			const reParams = new RegExp( 'function '+aliasMatch[ 1 ]+'\\(([^)]+)\\)', 'm' );
 			const paramsMatch = main.match( reParams );
 			
 			debug( 'Function parameters: '+paramsMatch[ 1 ] );
