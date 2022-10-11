@@ -52,7 +52,7 @@ const OPENAI_SETTINGS = {
 	'top_p': 1,
 	'frequency_penalty': 0,
 	'presence_penalty': 0,
-	'stop': [ 'Input (ts):', 'Input (js):', 'Input (jsdoc):', 'Input (README.md):', 'Output (' ],
+	'stop': [ 'Input (ts):', 'Input (j', 'Input (README.md):', 'Output (' ],
 	// 'user': context.actor
 };
 const LICENSE_TXT = `/**
