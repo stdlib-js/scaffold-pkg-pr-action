@@ -1,0 +1,55 @@
+Input (*.js):
+/**
+* Computes the squared absolute value of a double-precision floating-point number `x`.
+*
+* @param {number} x - input value
+* @returns {number} squared absolute value
+*
+* @example
+* var v = abs2( -1.0 );
+* // returns 1.0
+*
+* @example
+* var v = abs2( 2.0 );
+* // returns 4.0
+*
+* @example
+* var v = abs2( 0.0 );
+* // returns 0.0
+*
+* @example
+* var v = abs2( -0.0 );
+* // returns 0.0
+*
+* @example
+* var v = abs2( NaN );
+* // returns NaN
+*/
+function abs2( x ) {
+	return x * x;
+}
+
+
+// EXPORTS //
+
+module.exports = abs2;
+Output (main.c):
+#include "stdlib/math/base/special/abs2.h"
+
+/**
+* Computes the squared absolute value of a double-precision floating-point number.
+*
+* @param x       number
+* @return        squared absolute value
+*
+* @example
+* double y = stdlib_base_abs2( -5.0 );
+* // returns 25.0
+*/
+double stdlib_base_abs2( const double x ) {
+	return x * x;
+}
+Input (*.js):
+{{input}}
+
+Output (main.c):

@@ -766,6 +766,49 @@ async function main() {
                 (0, core_1.debug)('Function parameters: ' + paramsMatch[1]);
                 native = (0, string_replace_1.default)(native, '{{params}}', paramsMatch[1]);
                 writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'native.js', native);
+                const code = (0, string_substring_after_1.default)(main, '\'use strict\';');
+                try {
+                    const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'addon_c.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': addon.replace('{{input}}', code)
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        writeToDisk((0, path_1.join)(pkgDir, 'src'), 'addon.c', txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+                try {
+                    const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_c.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': addon.replace('{{input}}', code)
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
+                try {
+                    const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_h.txt'), 'utf8');
+                    const response = await openai.createCompletion({
+                        ...OPENAI_SETTINGS,
+                        'prompt': addon.replace('{{input}}', code)
+                    });
+                    if (response.data && response.data.choices) {
+                        const txt = response?.data?.choices[0].text || '';
+                        writeToDisk((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), aliasMatch[1] + '.h', txt);
+                    }
+                }
+                catch (err) {
+                    (0, core_1.setFailed)(err.message);
+                }
             }
             break;
         }

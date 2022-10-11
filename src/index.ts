@@ -772,6 +772,47 @@ async function main(): Promise<void> {
 			debug( 'Function parameters: '+paramsMatch[ 1 ] );
 			native = replace( native, '{{params}}', paramsMatch[ 1 ] );
 			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
+						
+			const code = substringAfter( main, '\'use strict\';' );
+			try {
+				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'addon_c.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': addon.replace( '{{input}}', code )
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = response?.data?.choices[ 0 ].text || '';
+					writeToDisk( join( pkgDir, 'src' ), 'addon.c', txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
+			try {
+				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': addon.replace( '{{input}}', code )
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = response?.data?.choices[ 0 ].text || '';
+					writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
+			try {
+				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_h.txt' ), 'utf8' );
+				const response = await openai.createCompletion({
+					...OPENAI_SETTINGS,
+					'prompt': addon.replace( '{{input}}', code )
+				});
+				if ( response.data && response.data.choices ) {
+					const txt = response?.data?.choices[ 0 ].text || '';
+					writeToDisk( join( pkgDir, 'include', 'stdlib', pkgPath ), aliasMatch[ 1 ] +'.h', txt );
+				}
+			} catch ( err ) {
+				setFailed( err.message );
+			}
 		}
 		break;	
 	}
