@@ -9,6 +9,12 @@ inputs:
   GITHUB_TOKEN:
     description: Your GitHub token for interacting with the GitHub API.
     required: true
+  pkg:
+    description: The package path.
+    required: false
+  type:
+    description: Scaffold action type (e.g., `native-addon`).
+    required: false
 
 runs:
   using: node16

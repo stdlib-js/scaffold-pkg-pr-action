@@ -52,10 +52,10 @@ const OPENAI_SETTINGS = {
     'top_p': 1,
     'frequency_penalty': 0,
     'presence_penalty': 0,
-    'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output ('],
+    'stop': ['Input (ts):', 'Input (js):', 'Input (jsdoc):', 'Input (README.md):', 'Output ('],
     // 'user': context.actor
 };
-const LICENSE_TXT = `/*
+const LICENSE_TXT = `/**
 * @license Apache-2.0
 *
 * Copyright (c) ${(0, time_current_year_1.default)()} The Stdlib Authors.
@@ -774,7 +774,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), 'addon.c', txt);
                     }
                 }
@@ -788,7 +788,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
                     }
                 }
@@ -802,7 +802,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = response?.data?.choices[0].text || '';
+                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), aliasMatch[1] + '.h', txt);
                     }
                 }
