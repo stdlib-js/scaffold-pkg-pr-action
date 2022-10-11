@@ -49,7 +49,7 @@ const OPENAI_SETTINGS = {
     'frequency_penalty': 0,
     'presence_penalty': 0,
     'stop': ['Input (ts):', 'Input (jsdoc):', 'Input (README.md):', 'Output ('],
-    'user': github_1.context.actor
+    // 'user': context.actor
 };
 const LICENSE_TXT = `/*
 * @license Apache-2.0
