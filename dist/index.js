@@ -173,6 +173,17 @@ function writePackageJSON(dir, pkg, cli) {
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+function extractDepsFromIncludes(dependencies, code) {
+    // Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
+    const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/;
+    let match = RE_STDLIB_INCLUDES.exec(code);
+    while (match !== null) {
+        const include = match[1];
+        dependencies.add('@stdlib/' + (0, string_replace_1.default)(include, '_', '-'));
+        match = RE_STDLIB_INCLUDES.exec(code);
+    }
+    return dependencies;
+}
 // MAIN //
 /**
 * Main function.
@@ -753,10 +764,6 @@ async function main() {
                 let includeGypi = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include_gypi.txt'), 'utf8');
                 includeGypi = includeGypi.replace('{{year}}', CURRENT_YEAR);
                 writeToDisk(pkgDir, 'include.gypi', includeGypi);
-                let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
-                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', '');
-                manifest = (0, string_replace_1.default)(manifest, '{{src}}', '');
-                writeToDisk(pkgDir, 'manifest.json', manifest);
                 let native = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'lib', 'native_js.txt'), 'utf8');
                 native = native.replace('{{year}}', CURRENT_YEAR);
                 native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdocMatch[1]);
@@ -767,6 +774,7 @@ async function main() {
                 native = (0, string_replace_1.default)(native, '{{params}}', paramsMatch[1]);
                 writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'native.js', native);
                 const code = (0, string_substring_after_1.default)(main, '\'use strict\';');
+                const dependencies = new Set();
                 try {
                     const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'addon_c.txt'), 'utf8');
                     const response = await openai.createCompletion({
@@ -775,6 +783,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
+                        extractDepsFromIncludes(dependencies, txt);
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), 'addon.c', txt);
                     }
                 }
@@ -789,6 +798,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
+                        extractDepsFromIncludes(dependencies, txt);
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
                     }
                 }
@@ -809,6 +819,10 @@ async function main() {
                 catch (err) {
                     (0, core_1.setFailed)(err.message);
                 }
+                let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
+                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n'));
+                manifest = (0, string_replace_1.default)(manifest, '{{src}}', '\'./src/' + aliasMatch[1] + '.c\'');
+                writeToDisk(pkgDir, 'manifest.json', manifest);
             }
             break;
         }

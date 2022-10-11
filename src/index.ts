@@ -179,6 +179,18 @@ async function sleep( ms: number ): Promise<void> {
 	return new Promise( resolve => setTimeout( resolve, ms ) );
 }
 
+function extractDepsFromIncludes( dependencies, code ) {
+	// Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
+	const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/;
+	let match = RE_STDLIB_INCLUDES.exec( code );
+	while ( match !== null ) {
+		const include = match[ 1 ];
+		dependencies.add( '@stdlib/'+replace( include, '_', '-' ) );
+		match = RE_STDLIB_INCLUDES.exec( code );
+	}
+	return dependencies;
+}
+
 	
 // MAIN //
 
@@ -757,11 +769,6 @@ async function main(): Promise<void> {
 			includeGypi = includeGypi.replace( '{{year}}', CURRENT_YEAR );
 			writeToDisk( pkgDir, 'include.gypi', includeGypi );
 			
-			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
-			manifest = replace( manifest, '{{dependencies}}', '' );
-			manifest = replace( manifest, '{{src}}', '' );
-			writeToDisk( pkgDir, 'manifest.json', manifest );
-			
 			let native = readFileSync( join( SNIPPETS_DIR, 'lib', 'native_js.txt' ), 'utf8' );
 			native = native.replace( '{{year}}', CURRENT_YEAR );
 			native = replace( native, '{{jsdoc}}', jsdocMatch[ 1 ] );
@@ -774,6 +781,7 @@ async function main(): Promise<void> {
 			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
 						
 			const code = substringAfter( main, '\'use strict\';' );
+			const dependencies = new Set();
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'addon_c.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
@@ -782,6 +790,7 @@ async function main(): Promise<void> {
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
+					extractDepsFromIncludes( dependencies, txt );
 					writeToDisk( join( pkgDir, 'src' ), 'addon.c', txt );
 				}
 			} catch ( err ) {
@@ -795,6 +804,7 @@ async function main(): Promise<void> {
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
+					extractDepsFromIncludes( dependencies, txt );
 					writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
 				}
 			} catch ( err ) {
@@ -813,6 +823,11 @@ async function main(): Promise<void> {
 			} catch ( err ) {
 				setFailed( err.message );
 			}
+			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
+			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\n' ) );
+			manifest = replace( manifest, '{{src}}', '\'./src/'+aliasMatch[ 1 ]+'.c\'' );
+			writeToDisk( pkgDir, 'manifest.json', manifest );
+			
 		}
 		break;	
 	}
