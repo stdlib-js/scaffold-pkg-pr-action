@@ -40,6 +40,7 @@ const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
+const WAIT_TIME = 10000; // 10 seconds
 const OPENAI_SETTINGS = {
     'model': 'code-davinci-002',
     'temperature': 0.7,
@@ -164,6 +165,9 @@ function writePackageJSON(dir, pkg, cli) {
         "keywords": []
     };
     (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
+}
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 // MAIN //
 /**
@@ -293,6 +297,7 @@ async function main() {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
                 }
+                await sleep(WAIT_TIME);
             }
             if (!has['lib/index.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s index file. Scaffolding...');
@@ -312,6 +317,7 @@ async function main() {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
                 }
+                await sleep(WAIT_TIME);
             }
             if (!has['lib/main.js']) {
                 (0, core_1.debug)('PR does not contain a new package\'s main file. Scaffolding...');
@@ -334,6 +340,7 @@ async function main() {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
                 }
+                await sleep(WAIT_TIME);
             }
             if (jsdoc) {
                 if (!has['benchmark/benchmark.js']) {
@@ -352,6 +359,7 @@ async function main() {
                     catch (err) {
                         (0, core_1.setFailed)(err.message);
                     }
+                    await sleep(WAIT_TIME);
                 }
                 let ts = '';
                 if (!has['docs/types/index.d.ts']) {
@@ -371,6 +379,7 @@ async function main() {
                     catch (err) {
                         (0, core_1.setFailed)(err.message);
                     }
+                    await sleep(WAIT_TIME);
                 }
                 if (!has['docs/types/test.ts']) {
                     try {
@@ -389,6 +398,7 @@ async function main() {
                     catch (err) {
                         (0, core_1.setFailed)(err.message);
                     }
+                    await sleep(WAIT_TIME);
                 }
             }
             if (!has['examples/index.js']) {
@@ -410,6 +420,7 @@ async function main() {
                     (0, core_1.debug)(err);
                     (0, core_1.setFailed)(err.message);
                 }
+                await sleep(WAIT_TIME);
             }
             if (!has['test/test.js']) {
                 try {
@@ -427,6 +438,7 @@ async function main() {
                 catch (err) {
                     (0, core_1.setFailed)(err.message);
                 }
+                await sleep(WAIT_TIME);
             }
             if (cliSection) {
                 cli = RE_CLI_ALIAS.exec(cliSection);
@@ -442,6 +454,7 @@ async function main() {
                         const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(dir, 'bin'), 'cli', txt);
                     }
+                    await sleep(WAIT_TIME);
                 }
                 if (!has['docs/usage.txt']) {
                     const matches = RE_CLI_USAGE.exec(cliSection);
@@ -449,6 +462,7 @@ async function main() {
                         const txt = matches[1] + '\n';
                         writeToDisk((0, path_1.join)(dir, 'docs'), 'usage.txt', txt);
                     }
+                    await sleep(WAIT_TIME);
                 }
                 if (!has['etc/cli_opts.json']) {
                     const response = await openai.createCompletion({
@@ -461,6 +475,7 @@ async function main() {
                         const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '') + '\n';
                         writeToDisk((0, path_1.join)(dir, 'etc'), 'cli_opts.json', txt);
                     }
+                    await sleep(WAIT_TIME);
                 }
                 if (!has['test/test.cli.js']) {
                     const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'test_cli_js.txt'), 'utf8')
@@ -475,6 +490,7 @@ async function main() {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(dir, 'test'), 'test.cli.js', txt);
                     }
+                    await sleep(WAIT_TIME);
                 }
             }
             const path = (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/');

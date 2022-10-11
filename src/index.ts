@@ -40,6 +40,7 @@ const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
+const WAIT_TIME = 10000; // 10 seconds
 const OPENAI_SETTINGS = {
 	'model': 'code-davinci-002',
 	'temperature': 0.7,
@@ -169,7 +170,11 @@ function writePackageJSON( dir: string, pkg: string, cli?: string ): void {
 	};
 	writeFileSync( join( dir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 )+'\n' );
 }
-	
+
+async function sleep( ms: number ): Promise<void> {
+	return new Promise( resolve => setTimeout( resolve, ms ) );
+}
+
 	
 // MAIN //
 
@@ -305,6 +310,7 @@ async function main(): Promise<void> {
 				debug( err );
 				setFailed( err.message );
 			}
+			await sleep( WAIT_TIME );
 		}
 		if ( !has['lib/index.js'] ) {
 			debug( 'PR does not contain a new package\'s index file. Scaffolding...' );
@@ -323,6 +329,7 @@ async function main(): Promise<void> {
 				debug( err );
 				setFailed( err.message );
 			}
+			await sleep( WAIT_TIME );
 		}
 		if ( !has['lib/main.js'] ) {
 			debug( 'PR does not contain a new package\'s main file. Scaffolding...' );
@@ -344,6 +351,7 @@ async function main(): Promise<void> {
 				debug( err );
 				setFailed( err.message );
 			}
+			await sleep( WAIT_TIME );
 		}
 		if ( jsdoc ) {
 			if ( !has['benchmark/benchmark.js'] ) {
@@ -361,6 +369,7 @@ async function main(): Promise<void> {
 				} catch ( err ) {
 					setFailed( err.message );
 				}
+				await sleep( WAIT_TIME );
 			}
 			let ts = '';
 			if ( !has['docs/types/index.d.ts'] ) {
@@ -379,6 +388,7 @@ async function main(): Promise<void> {
 				} catch ( err ) {
 					setFailed( err.message );
 				}
+				await sleep( WAIT_TIME );
 			}
 			if ( !has['docs/types/test.ts'] ) {
 				try {
@@ -396,6 +406,7 @@ async function main(): Promise<void> {
 				} catch ( err ) {
 					setFailed( err.message );
 				}
+				await sleep( WAIT_TIME );
 			}
 		}
 		if ( !has['examples/index.js'] ) {
@@ -416,6 +427,7 @@ async function main(): Promise<void> {
 				debug( err );
 				setFailed( err.message );
 			}
+			await sleep( WAIT_TIME );
 		}	
 		if ( !has['test/test.js'] ) {
 			try {
@@ -432,6 +444,7 @@ async function main(): Promise<void> {
 			} catch ( err ) {
 				setFailed( err.message );
 			}
+			await sleep( WAIT_TIME );
 		}
 		if ( cliSection ) {
 			cli = RE_CLI_ALIAS.exec( cliSection );
@@ -447,6 +460,7 @@ async function main(): Promise<void> {
 					const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
 					writeToDisk( join( dir, 'bin' ), 'cli', txt );
 				}
+				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'docs/usage.txt' ] ) {
 				const matches = RE_CLI_USAGE.exec( cliSection );
@@ -454,6 +468,7 @@ async function main(): Promise<void> {
 					const txt = matches[ 1 ] + '\n';
 					writeToDisk( join( dir, 'docs' ), 'usage.txt', txt );
 				}
+				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'etc/cli_opts.json' ] ) {
 				const response = await openai.createCompletion({
@@ -466,6 +481,7 @@ async function main(): Promise<void> {
 					const txt = trim( response?.data?.choices[ 0 ].text || '' ) + '\n';
 					writeToDisk( join( dir, 'etc' ), 'cli_opts.json', txt );
 				}
+				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'test/test.cli.js' ] ) {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'test_cli_js.txt' ), 'utf8' )
@@ -480,6 +496,7 @@ async function main(): Promise<void> {
 					const txt =  LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
 					writeToDisk( join( dir, 'test' ), 'test.cli.js', txt );
 				}
+				await sleep( WAIT_TIME );
 			}
 		}
 		const path = substringAfter( dir, 'lib/node_modules/@stdlib/' );
