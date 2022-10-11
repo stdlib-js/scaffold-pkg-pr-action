@@ -39,7 +39,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
-const RE_LAST_JSDOC = /(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
+const RE_MAIN_JSDOC = /\/\/ MAIN \/\/\r?\n\r?\n(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const SNIPPETS_DIR = (0, path_1.join)(__dirname, '..', 'snippets');
 const WAIT_TIME = 10000; // 10 seconds
@@ -735,9 +735,10 @@ async function main() {
             const pkgDir = (0, path_1.join)(workDir, 'lib', 'node_modules', '@stdlib', pkgPath);
             if (actionType === 'native-addon') {
                 const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
-                const jsdocMatch = main.match(RE_LAST_JSDOC);
+                const jsdocMatch = main.match(RE_MAIN_JSDOC);
                 const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
                 const aliasMatch = main.match(RE_EXPORT_NAME);
+                (0, core_1.debug)('Package alias: ' + aliasMatch[1]);
                 (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'src'));
                 (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), {
                     'recursive': true
@@ -759,7 +760,10 @@ async function main() {
                 native = native.replace('{{year}}', CURRENT_YEAR);
                 native = native.replace('{{jsdoc}}', jsdocMatch[1]);
                 native = native.replace('{{alias}}', aliasMatch[1]);
-                native = native.replace('{{params}}', '');
+                const reParams = new RegExp(aliasMatch[1] + '\\(([^)]+)\\)', 'm');
+                const paramsMatch = main.match(reParams);
+                (0, core_1.debug)('Function parameters: ' + paramsMatch[1]);
+                native = native.replace('{{params}}', paramsMatch[1]);
                 writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'native.js', native);
             }
             break;

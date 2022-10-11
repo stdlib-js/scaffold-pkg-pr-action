@@ -39,7 +39,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
-const RE_LAST_JSDOC = /(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
+const RE_MAIN_JSDOC = /\/\/ MAIN \/\/\r?\n\r?\n(\/\*\*[\s\S]*?\*\/[\s\S]*?)module\.exports = (.*?);$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
 const WAIT_TIME = 10000; // 10 seconds
@@ -734,9 +734,10 @@ async function main(): Promise<void> {
 		
 		if ( actionType === 'native-addon' ) {
 			const main = readFileSync( join( pkgDir, 'lib', 'main.js' ), 'utf8' );
-			const jsdocMatch = main.match( RE_LAST_JSDOC );
+			const jsdocMatch = main.match( RE_MAIN_JSDOC );
 			const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
 			const aliasMatch = main.match( RE_EXPORT_NAME );
+			debug( 'Package alias: '+aliasMatch[ 1 ] );
 			
 			mkdirSync( join( pkgDir, 'src' ) );
 			mkdirSync( join( pkgDir, 'include', 'stdlib', pkgPath ), {
@@ -764,7 +765,11 @@ async function main(): Promise<void> {
 			native = native.replace( '{{year}}', CURRENT_YEAR );
 			native = native.replace( '{{jsdoc}}', jsdocMatch[ 1 ] );
 			native = native.replace( '{{alias}}', aliasMatch[ 1 ] );
-			native = native.replace( '{{params}}', '' );
+			const reParams = new RegExp( aliasMatch[ 1 ]+'\\(([^)]+)\\)', 'm' );
+			const paramsMatch = main.match( reParams );
+			
+			debug( 'Function parameters: '+paramsMatch[ 1 ] );
+			native = native.replace( '{{params}}', paramsMatch[ 1 ] );
 			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
 		}
 		break;	
