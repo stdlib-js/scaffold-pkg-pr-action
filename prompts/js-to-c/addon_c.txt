@@ -1,4 +1,4 @@
-Input (*.js):
+Input (js):
 /**
 * Computes the squared absolute value of a double-precision floating-point number `x`.
 *
@@ -38,7 +38,7 @@ Output (addon.c):
 #include "stdlib/math/base/napi/unary.h"
 
 STDLIB_MATH_BASE_NAPI_MODULE_D_D( stdlib_base_abs2 )
-Input (*.js):
+Input (js):
 {{input}}
 
 Output (addon.c):

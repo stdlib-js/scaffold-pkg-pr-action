@@ -781,7 +781,7 @@ async function main(): Promise<void> {
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = LICENSE_TXT + '\n' + ( response?.data?.choices[ 0 ].text || '' );
+					const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
 					writeToDisk( join( pkgDir, 'src' ), 'addon.c', txt );
 				}
 			} catch ( err ) {
@@ -794,7 +794,7 @@ async function main(): Promise<void> {
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = LICENSE_TXT + '\n' + ( response?.data?.choices[ 0 ].text || '' );
+					const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
 					writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
 				}
 			} catch ( err ) {
@@ -807,7 +807,7 @@ async function main(): Promise<void> {
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
-					const txt = LICENSE_TXT + '\n' + ( response?.data?.choices[ 0 ].text || '' );
+					const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
 					writeToDisk( join( pkgDir, 'include', 'stdlib', pkgPath ), aliasMatch[ 1 ] +'.h', txt );
 				}
 			} catch ( err ) {

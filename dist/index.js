@@ -774,7 +774,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
+                        const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), 'addon.c', txt);
                     }
                 }
@@ -788,7 +788,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
+                        const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
                     }
                 }
@@ -802,7 +802,7 @@ async function main() {
                         'prompt': addon.replace('{{input}}', code)
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\n' + (response?.data?.choices[0].text || '');
+                        const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
                         writeToDisk((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), aliasMatch[1] + '.h', txt);
                     }
                 }

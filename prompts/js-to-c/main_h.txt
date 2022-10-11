@@ -1,4 +1,4 @@
-Input (*.js):
+Input (js):
 /**
 * Computes the squared absolute value of a double-precision floating-point number `x`.
 *
@@ -33,7 +33,7 @@ function abs2( x ) {
 // EXPORTS //
 
 module.exports = abs2;
-Output (*.h):
+Output (main.h):
 /**
 * Header file containing function declarations.
 */
@@ -57,7 +57,7 @@ double stdlib_base_abs2( const double x );
 #endif
 
 #endif // !STDLIB_MATH_BASE_SPECIAL_ABS2_H
-Input (*.js):
+Input (js):
 {{input}}
 
 Output (main.h):

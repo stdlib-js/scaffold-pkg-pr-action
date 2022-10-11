@@ -1,4 +1,4 @@
-Input (*.js):
+Input (js):
 /**
 * Computes the squared absolute value of a double-precision floating-point number `x`.
 *
@@ -49,7 +49,7 @@ Output (main.c):
 double stdlib_base_abs2( const double x ) {
 	return x * x;
 }
-Input (*.js):
+Input (js):
 {{input}}
 
 Output (main.c):
