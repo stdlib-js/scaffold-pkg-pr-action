@@ -114,10 +114,11 @@ jobs:
       - name: 'Copy files from forked repository to new branch on `stdlib-js/stdlib` repository'
         run: |
           SCAFFOLD_BRANCH="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
-          SLUG='https://github.com/stdlib-js/scaffold-pkg-pr-action.git'
+          SLUG='stdlib-js/scaffold-pkg-pr-action'
+          REPO="https://github.com/${SLUG}.git"
 
           # Add remote for `stdlib-js/stdlib` repository:
-          git remote add source $SLUG
+          git remote add source $REPO
           
           # Fetch `stdlib-js/stdlib` repository:
           git fetch source
