@@ -113,22 +113,23 @@ jobs:
       # Copy files from forked repository to new branch on `stdlib-js/stdlib` repository:
       - name: 'Copy files from forked repository to new branch on `stdlib-js/stdlib` repository'
         run: |
-          scaffold_branch="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
+          SCAFFOLD_BRANCH="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
+          SLUG='https://github.com/stdlib-js/scaffold-pkg-pr-action.git'
 
           # Add remote for `stdlib-js/stdlib` repository:
-          git remote add source https://github.com/stdlib-js/scaffold-pkg-pr-action.git
+          git remote add source $SLUG
           
           # Fetch `stdlib-js/stdlib` repository:
           git fetch source
           
           # Create `scaffold/<path>` branch:
-          git branch $scaffold_branch origin/${{ github.event.pull_request.head.ref }}
+          git branch $SCAFFOLD_BRANCH origin/${{ github.event.pull_request.head.ref }}
           
           # Rebase `scaffold/<path>` branch to develop branch of `stdlib-js/stdlib` repository:
-          git rebase main $scaffold_branch --onto source/main 
+          git rebase main $SCAFFOLD_BRANCH --onto source/main 
           
           # Push `scaffold/<path>` branch to `stdlib-js/stdlib` repository:
-          git push source $scaffold_branch
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/stdlib-js/$SLUG" $SCAFFOLD_BRANCH
 
   # Define a job for scaffolding a package based off `README.md` contents:
   scaffold-internal:
