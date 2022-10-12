@@ -62,16 +62,10 @@ jobs:
     # Define the sequence of job steps...
     steps:
 
-      # Checkout the pull request branch of the external repository:
-      - name: 'Checkout the pull request branch of the external repository'
+      # Checkout the pull request branch:
+      - name: 'Checkout the pull request branch'
         uses: actions/checkout@v2
         with:
-          # Refers to the branch name of the pull request:
-          ref: ${{ github.event.pull_request.head.ref }}
-          
-          # Refers to the repository name of the pull request:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          
           # Limit clone depth to the last 25 commits:
           fetch-depth: 25
       
