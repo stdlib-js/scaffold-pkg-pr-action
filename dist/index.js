@@ -241,9 +241,9 @@ async function main() {
                 return;
             }
             // Extract the directory path for the new package:
-            const dir = readme.filename.replace('/README.md', '');
+            const dir = readme.replace('/README.md', '');
             // Load the package's README.md file:
-            const readmePath = (0, path_1.join)(workDir, readme.filename);
+            const readmePath = (0, path_1.join)(workDir, readme);
             const readmeText = (0, fs_1.readFileSync)(readmePath, 'utf8');
             (0, core_1.debug)('New package directory: ' + dir);
             // Hash map of whether the PR contains a new package's files:
@@ -261,41 +261,41 @@ async function main() {
                 'test/test.js': false,
                 'test/test.cli.js': false
             };
-            files.data.forEach(f => {
-                if (f.filename.endsWith('benchmark/benchmark.js')) {
+            files.forEach(f => {
+                if (f.endsWith('benchmark/benchmark.js')) {
                     has['benchmark/benchmark.js'] = true;
                 }
-                if (f.filename.endsWith('bin/cli')) {
+                if (f.endsWith('bin/cli')) {
                     has['bin/cli'] = true;
                 }
-                if (f.filename.endsWith('docs/types/index.d.ts')) {
+                if (f.endsWith('docs/types/index.d.ts')) {
                     has['docs/types/index.d.ts'] = true;
                 }
-                if (f.filename.endsWith('docs/types/test.ts')) {
+                if (f.endsWith('docs/types/test.ts')) {
                     has['docs/types/test.ts'] = true;
                 }
-                if (f.filename.endsWith('docs/repl.txt')) {
+                if (f.endsWith('docs/repl.txt')) {
                     has['docs/repl.txt'] = true;
                 }
-                if (f.filename.endsWith('docs/usage.txt')) {
+                if (f.endsWith('docs/usage.txt')) {
                     has['docs/usage.txt'] = true;
                 }
-                if (f.filename.endsWith('etc/cli_opts.json')) {
+                if (f.endsWith('etc/cli_opts.json')) {
                     has['etc/cli_opts.json'] = true;
                 }
-                if (f.filename.endsWith('examples/index.js')) {
+                if (f.endsWith('examples/index.js')) {
                     has['examples/index.js'] = true;
                 }
-                if (f.filename.endsWith('lib/index.js')) {
+                if (f.endsWith('lib/index.js')) {
                     has['lib/index.js'] = true;
                 }
-                if (f.filename.endsWith('lib/main.js')) {
+                if (f.endsWith('lib/main.js')) {
                     has['lib/main.js'] = true;
                 }
-                if (f.filename.endsWith('test/test.js')) {
+                if (f.endsWith('test/test.js')) {
                     has['test/test.js'] = true;
                 }
-                if (f.filename.endsWith('test/test.cli.js')) {
+                if (f.endsWith('test/test.cli.js')) {
                     has['test/test.cli.js'] = true;
                 }
             });
