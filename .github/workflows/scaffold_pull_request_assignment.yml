@@ -122,7 +122,7 @@ jobs:
           git fetch source
           
           # Create `scaffold/<path>` branch:
-          git branch $scaffold_branch ${{ github.event.pull_request.head.ref }}
+          git branch $scaffold_branch origin/${{ github.event.pull_request.head.ref }}
           
           # Rebase `scaffold/<path>` branch to develop branch of `stdlib-js/stdlib` repository:
           git rebase main $scaffold_branch --onto source/main 
