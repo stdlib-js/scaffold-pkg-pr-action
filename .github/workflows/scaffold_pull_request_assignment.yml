@@ -71,6 +71,9 @@ jobs:
           
           # Refers to the repository name of the pull request:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          
+          # Limit clone depth to the last 25 commits:
+          fetch-depth: 25
       
       # Get list of changed files:
       - name: Get list of changed files
@@ -103,7 +106,7 @@ jobs:
           scaffold_branch="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
         
           # Add remote for `stdlib-js/stdlib` repository:
-          git remote add someone https://github.com/stdlib-js/stdlib.git
+          git remote add someone https://github.com/stdlib-js/scaffold-pkg-pr-action.git
           
           # Fetch `stdlib-js/stdlib` repository:
           git fetch someone

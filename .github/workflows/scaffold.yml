@@ -18,7 +18,7 @@
 #/
 
 # Workflow name:
-name: Scaffold Package
+name: scaffold_package
 
 # Workflow triggers:
 on:
