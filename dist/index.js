@@ -228,7 +228,7 @@ async function main() {
                     .map(file => file.filename);
             }
             else {
-                files = (0, core_1.getInput)('added_files');
+                files = (0, core_1.getInput)('added-files');
                 files = files.split(' ');
             }
             (0, core_1.debug)('Files: ' + JSON.stringify(files.data));

@@ -239,7 +239,7 @@ async function main(): Promise<void> {
 				.map( file => file.filename );
 		}
 		else {
-			files = getInput( 'added_files' );
+			files = getInput( 'added-files' );
 			files = files.split( ' ' );
 		}
 		debug( 'Files: '+JSON.stringify( files.data ) );
