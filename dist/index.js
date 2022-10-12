@@ -820,7 +820,7 @@ async function main() {
                     (0, core_1.setFailed)(err.message);
                 }
                 let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
-                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\t\t\t\t\n'));
+                manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n,\t\t\t\t'));
                 manifest = (0, string_replace_1.default)(manifest, '{{src}}', '"./src/' + aliasMatch[1] + '.c"');
                 writeToDisk(pkgDir, 'manifest.json', manifest);
             }

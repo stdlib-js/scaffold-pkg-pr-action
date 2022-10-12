@@ -824,7 +824,7 @@ async function main(): Promise<void> {
 				setFailed( err.message );
 			}
 			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
-			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\t\t\t\t\n' ) );
+			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\n,\t\t\t\t' ) );
 			manifest = replace( manifest, '{{src}}', '"./src/'+aliasMatch[ 1 ]+'.c"' );
 			writeToDisk( pkgDir, 'manifest.json', manifest );
 			
