@@ -96,7 +96,7 @@ jobs:
           pkg_path=$(echo ${{ steps.changed-files.outputs.added_files }} | tr ' ' '\n' | grep 'README.md' | head -n 1)
 
           # Keep substring after `lib/node_modules/@stdlib/` and strip trailing `README.md`:
-          pkg_path=$(echo $pkg_path | sed 's/.*lib\/node_modules\/@stdlib\///g' | sed 's/README.md//g')
+          pkg_path=$(echo $pkg_path | sed 's/.*lib\/node_modules\/@stdlib\///g' | sed 's/\/README.md//g')
 
           # Set package path as output:
           echo "::set-output name=pkg_path::$pkg_path"
