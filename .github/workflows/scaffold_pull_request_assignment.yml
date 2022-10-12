@@ -130,7 +130,7 @@ jobs:
           git rebase main $SCAFFOLD_BRANCH --onto source/main 
           
           # Push `scaffold/<path>` branch to `stdlib-js/stdlib` repository:
-          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/stdlib-js/$SLUG" $SCAFFOLD_BRANCH
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG" $SCAFFOLD_BRANCH
 
   # Define a job for scaffolding a package based off `README.md` contents:
   scaffold-internal:
