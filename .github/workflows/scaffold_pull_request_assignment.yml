@@ -95,6 +95,8 @@ jobs:
         uses: tj-actions/changed-files@v32
         with:
           separator: ' '
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          sha: ${{ github.event.pull_request.head.sha }}
 
       # Extract file path of added `README.md` file:
       - name: 'Extract file path of added `README.md` file'
