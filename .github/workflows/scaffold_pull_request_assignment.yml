@@ -73,6 +73,12 @@ jobs:
       - name: 'Checkout the pull request branch'
         uses: actions/checkout@v2
         with:
+          # Refers to the branch name of the pull request:
+          ref: ${{ github.event.pull_request.head.ref }}
+          
+          # Refers to the repository name of the pull request:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          
           # Limit clone depth to the last 25 commits:
           fetch-depth: 25
       
@@ -88,6 +94,7 @@ jobs:
         run: |
           git config --local user.email "noreply@stdlib.io"
           git config --local user.name "stdlib-bot"
+          git fetch --all
 
       # Extract file path of added `README.md` file:
       - name: 'Extract file path of added `README.md` file'
@@ -113,7 +120,7 @@ jobs:
           git fetch source
           
           # Create `scaffold/<path>` branch:
-          git branch $scaffold_branch
+          git branch $scaffold_branch ${{ github.event.pull_request.head.ref }}
           
           # Rebase `scaffold/<path>` branch to develop branch of `stdlib-js/stdlib` repository:
           git rebase main $scaffold_branch --onto source/main 
