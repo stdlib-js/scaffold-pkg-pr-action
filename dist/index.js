@@ -229,6 +229,7 @@ async function main() {
             }
             else {
                 files = (0, core_1.getInput)('added_files');
+                files = files.split(' ');
             }
             (0, core_1.debug)('Files: ' + JSON.stringify(files.data));
             // Check whether the PR contains a new package's README.md file:

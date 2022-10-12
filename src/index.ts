@@ -179,7 +179,7 @@ async function sleep( ms: number ): Promise<void> {
 	return new Promise( resolve => setTimeout( resolve, ms ) );
 }
 
-function extractDepsFromIncludes( dependencies, code ) {
+function extractDepsFromIncludes( dependencies: Set<string>, code: string ): Set<string> {
 	// Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
 	const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/g;
 	let match = RE_STDLIB_INCLUDES.exec( code );
@@ -239,7 +239,8 @@ async function main(): Promise<void> {
 				.map( file => file.filename );
 		}
 		else {
-			files = getInput( 'added_files' )
+			files = getInput( 'added_files' );
+			files = files.split( ' ' );
 		}
 		debug( 'Files: '+JSON.stringify( files.data ) );
 		
