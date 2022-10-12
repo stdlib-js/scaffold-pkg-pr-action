@@ -21,7 +21,7 @@ name: scaffold_package_via_pull_request_assignment
 
 # Workflow triggers:
 on:
-  pull_request:
+  pull_request_target:
     types: [assigned]
 
 # Workflow jobs:
