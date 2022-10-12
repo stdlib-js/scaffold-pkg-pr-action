@@ -199,6 +199,8 @@ async function main() {
     });
     const openai = new openai_1.OpenAIApi(configuration);
     const workDir = (0, path_1.join)(process.env.GITHUB_WORKSPACE);
+    const token = (0, core_1.getInput)('GITHUB_TOKEN');
+    const octokit = (0, github_1.getOctokit)(token);
     (0, core_1.debug)('Working directory: ' + workDir);
     (0, core_1.debug)('Prompts directory: ' + PROMPTS_DIR);
     // Bail if the action is triggered from outside of the `stdlib-js' organization:
@@ -207,24 +209,31 @@ async function main() {
         return (0, core_1.setFailed)('Action is for internal use and must be triggered from within the `stdlib-js` organization.');
     }
     switch (github_1.context.eventName) {
+        case 'push':
         case 'pull_request': {
+            let files;
             // Check whether PR was assigned to the "stdlib-bot" user:
-            if (github_1.context.payload.pull_request.assignee.login !== 'stdlib-bot') {
-                (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
-                return;
+            if (github_1.context.eventName === 'pull_request') {
+                if (github_1.context.payload.pull_request.assignee.login !== 'stdlib-bot') {
+                    (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
+                    return;
+                }
+                files = await octokit.rest.pulls.listFiles({
+                    'owner': github_1.context.repo.owner,
+                    'repo': github_1.context.repo.repo,
+                    'pull_number': github_1.context.payload.pull_request.number
+                });
+                files = files.data
+                    .filter(file => file.status === 'added')
+                    .map(file => file.filename);
             }
-            // Get the files created by the PR via the GitHub API:
-            const token = (0, core_1.getInput)('GITHUB_TOKEN');
-            const octokit = (0, github_1.getOctokit)(token);
-            const files = await octokit.rest.pulls.listFiles({
-                'owner': github_1.context.repo.owner,
-                'repo': github_1.context.repo.repo,
-                'pull_number': github_1.context.payload.pull_request.number
-            });
+            else {
+                files = (0, core_1.getInput)('added_files');
+            }
             (0, core_1.debug)('Files: ' + JSON.stringify(files.data));
             // Check whether the PR contains a new package's README.md file:
-            const readme = files.data.find(f => {
-                return f.filename.endsWith('README.md') && f.status === 'added';
+            const readme = files.find(f => {
+                return f.endsWith('README.md');
             });
             if (readme === void 0) {
                 (0, core_1.debug)('PR does not contain a new package\'s README.md file. Skipping...');

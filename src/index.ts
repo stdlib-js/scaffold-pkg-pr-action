@@ -208,6 +208,8 @@ async function main(): Promise<void> {
 	});
 	const openai = new OpenAIApi( configuration );
 	const workDir = join( process.env.GITHUB_WORKSPACE );
+	const token = getInput( 'GITHUB_TOKEN' );
+	const octokit = getOctokit( token );
 	debug( 'Working directory: '+workDir );
 	debug( 'Prompts directory: '+PROMPTS_DIR );
 	
@@ -217,26 +219,33 @@ async function main(): Promise<void> {
 		return setFailed( 'Action is for internal use and must be triggered from within the `stdlib-js` organization.' );
 	}
 	switch ( context.eventName ) {
+	case 'push':
 	case 'pull_request': {
-		// Check whether PR was assigned to the "stdlib-bot" user:
-		if ( context.payload.pull_request.assignee.login !== 'stdlib-bot' ) {
-			debug( 'PR not assigned to stdlib-bot. Skipping...' );
-			return;
-		}
-		// Get the files created by the PR via the GitHub API:
-		const token = getInput( 'GITHUB_TOKEN' );
-		const octokit = getOctokit( token );
+		let files;
 		
-		const files = await octokit.rest.pulls.listFiles({
-			'owner': context.repo.owner,
-			'repo': context.repo.repo,
-			'pull_number': context.payload.pull_request.number
-		});
+		// Check whether PR was assigned to the "stdlib-bot" user:
+		if ( context.eventName === 'pull_request' ) {
+			if ( context.payload.pull_request.assignee.login !== 'stdlib-bot' ) {
+				debug( 'PR not assigned to stdlib-bot. Skipping...' );
+				return;
+			}
+			files = await octokit.rest.pulls.listFiles({
+				'owner': context.repo.owner,
+				'repo': context.repo.repo,
+				'pull_number': context.payload.pull_request.number
+			});
+			files = files.data
+				.filter( file => file.status === 'added' )
+				.map( file => file.filename );
+		}
+		else {
+			files = getInput( 'added_files' )
+		}
 		debug( 'Files: '+JSON.stringify( files.data ) );
 		
 		// Check whether the PR contains a new package's README.md file:
-		const readme = files.data.find( f => {
-			return f.filename.endsWith( 'README.md' ) && f.status === 'added';
+		const readme = files.find( f => {
+			return f.endsWith( 'README.md' );
 		});
 		if ( readme === void 0 ) {
 			debug( 'PR does not contain a new package\'s README.md file. Skipping...' );

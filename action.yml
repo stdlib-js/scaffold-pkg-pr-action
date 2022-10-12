@@ -4,16 +4,19 @@ author: Philipp Burckhardt <pburckhardt@outlook.com>
 
 inputs:
   OPENAI_API_KEY:
-    description: Your OpenAI API key for the GPT-3 API.
+    description: OpenAI API key for the GPT-3 API.
     required: true
   GITHUB_TOKEN:
-    description: Your GitHub token for interacting with the GitHub API.
+    description: GitHub token for interacting with the GitHub API.
     required: true
   pkg:
     description: The package path.
     required: false
   type:
     description: Scaffold action type (e.g., `native-addon`).
+    required: false
+  added-files:
+    description: List of added files in a push event.
     required: false
 
 runs:
