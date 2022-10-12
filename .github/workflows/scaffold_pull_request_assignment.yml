@@ -107,19 +107,19 @@ jobs:
           scaffold_branch="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
 
           # Add remote for `stdlib-js/stdlib` repository:
-          git remote add someone https://github.com/stdlib-js/scaffold-pkg-pr-action.git
+          git remote add source https://github.com/stdlib-js/scaffold-pkg-pr-action.git
           
           # Fetch `stdlib-js/stdlib` repository:
-          git fetch someone
+          git fetch source
           
           # Create `scaffold/<path>` branch:
           git branch $scaffold_branch ${{ github.event.pull_request.head.ref }}
           
           # Rebase `scaffold/<path>` branch to develop branch of `stdlib-js/stdlib` repository:
-          git rebase develop $scaffold_branch --onto someone/develop 
+          git rebase develop $scaffold_branch --onto source/main 
           
           # Push `scaffold/<path>` branch to `stdlib-js/stdlib` repository:
-          git push someone $scaffold_branch
+          git push source $scaffold_branch
 
   # Define a job for scaffolding a package based off `README.md` contents:
   scaffold-internal:
