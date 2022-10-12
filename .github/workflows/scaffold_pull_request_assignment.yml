@@ -81,6 +81,13 @@ jobs:
           
           # Limit clone depth to the last 25 commits:
           fetch-depth: 25
+          
+      # Configure git:
+      - name: 'Configure git'
+        run: |
+          git config --local user.email "noreply@stdlib.io"
+          git config --local user.name "stdlib-bot"
+          git fetch --all
       
       # Get list of changed files:
       - name: Get list of changed files
@@ -88,13 +95,6 @@ jobs:
         uses: tj-actions/changed-files@v32
         with:
           separator: ' '
-
-      # Configure git:
-      - name: 'Configure git'
-        run: |
-          git config --local user.email "noreply@stdlib.io"
-          git config --local user.name "stdlib-bot"
-          git fetch --all
 
       # Extract file path of added `README.md` file:
       - name: 'Extract file path of added `README.md` file'
