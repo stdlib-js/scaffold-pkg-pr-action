@@ -113,10 +113,10 @@ jobs:
           git fetch source
           
           # Create `scaffold/<path>` branch:
-          git branch $scaffold_branch ${{ github.event.pull_request.head.ref }}
+          git branch $scaffold_branch
           
           # Rebase `scaffold/<path>` branch to develop branch of `stdlib-js/stdlib` repository:
-          git rebase develop $scaffold_branch --onto source/main 
+          git rebase main $scaffold_branch --onto source/main 
           
           # Push `scaffold/<path>` branch to `stdlib-js/stdlib` repository:
           git push source $scaffold_branch
