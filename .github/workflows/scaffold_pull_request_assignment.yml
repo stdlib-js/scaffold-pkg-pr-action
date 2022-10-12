@@ -62,6 +62,13 @@ jobs:
     # Define the sequence of job steps...
     steps:
 
+      # Stop if pull request is not assigned to the `stdlib-bot` user:
+      - name: 'Stop if pull request is not assigned to the `stdlib-bot` user'
+        if: ${{ github.event.assignee.login != 'stdlib-bot' }}
+        run: |
+          echo "Pull request is not assigned to the `stdlib-bot` user. Exiting..."
+          exit 0
+
       # Checkout the pull request branch:
       - name: 'Checkout the pull request branch'
         uses: actions/checkout@v2
@@ -86,11 +93,11 @@ jobs:
       - name: 'Extract file path of added `README.md` file'
         id: extract-readme
         run: |
-          pkg_path=echo ${{ steps.changed-files.outputs.added_files }} | tr ' ' '\n' | grep 'README.md' | head -n 1
-          
+          pkg_path=$(echo ${{ steps.changed-files.outputs.added_files }} | tr ' ' '\n' | grep 'README.md' | head -n 1)
+
           # Keep substring after `lib/node_modules/@stdlib/` and strip trailing `README.md`:
           pkg_path=$(echo $pkg_path | sed 's/.*lib\/node_modules\/@stdlib\///g' | sed 's/README.md//g')
-          
+
           # Set package path as output:
           echo "::set-output name=pkg_path::$pkg_path"
 
@@ -98,7 +105,7 @@ jobs:
       - name: 'Copy files from forked repository to new branch on `stdlib-js/stdlib` repository'
         run: |
           scaffold_branch="scaffold/${{ steps.extract-readme.outputs.pkg_path }}"
-        
+
           # Add remote for `stdlib-js/stdlib` repository:
           git remote add someone https://github.com/stdlib-js/scaffold-pkg-pr-action.git
           
@@ -128,6 +135,13 @@ jobs:
 
     # Define the sequence of job steps...
     steps:
+      # Stop if pull request is not assigned to the `stdlib-bot` user:
+      - name: 'Stop if pull request is not assigned to the `stdlib-bot` user'
+        if: ${{ github.event.assignee.login != 'stdlib-bot' }}
+        run: |
+          echo "Pull request is not assigned to the `stdlib-bot` user. Exiting..."
+          exit 0
+
       # Checkout the pull request branch:
       - uses: actions/checkout@v2
         with:
