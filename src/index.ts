@@ -209,6 +209,7 @@ async function main(): Promise<void> {
 	const openai = new OpenAIApi( configuration );
 	const workDir = join( process.env.GITHUB_WORKSPACE );
 	const token = getInput( 'GITHUB_TOKEN' );
+	const addedFiles = getInput( 'added-files' );
 	const octokit = getOctokit( token );
 	debug( 'Working directory: '+workDir );
 	debug( 'Prompts directory: '+PROMPTS_DIR );
@@ -220,30 +221,33 @@ async function main(): Promise<void> {
 	}
 	switch ( context.eventName ) {
 	case 'push':
-	case 'pull_request': {
-		let files;
+	case 'pull_request': 
+	case 'pull_request_target': {
+		let files: string[];
 		
 		// Check whether PR was assigned to the "stdlib-bot" user:
-		if ( context.eventName === 'pull_request' ) {
+		if ( context.eventName === 'pull_request' || context.eventName === 'pull_request_target' ) {
 			if ( context.payload.pull_request.assignee.login !== 'stdlib-bot' ) {
 				debug( 'PR not assigned to stdlib-bot. Skipping...' );
 				return;
 			}
-			files = await octokit.rest.pulls.listFiles({
-				'owner': context.repo.owner,
-				'repo': context.repo.repo,
-				'pull_number': context.payload.pull_request.number
-			});
-			files = files.data
-				.filter( file => file.status === 'added' )
-				.map( file => file.filename );
+			if ( addedFiles ) {
+				files = addedFiles.split( ' ' );
+			} else {
+				const res = await octokit.rest.pulls.listFiles({
+					'owner': context.repo.owner,
+					'repo': context.repo.repo,
+					'pull_number': context.payload.pull_request.number
+				});
+				files = res.data
+					.filter( file => file.status === 'added' )
+					.map( file => file.filename );
+			}
 		}
 		else {
-			files = getInput( 'added-files' );
-			files = files.split( ' ' );
+			files = addedFiles.split( ' ' );
 		}
-		debug( 'Files: '+JSON.stringify( files.data ) );
-		
+			
 		// Check whether the PR contains a new package's README.md file:
 		const readme = files.find( f => {
 			return f.endsWith( 'README.md' );

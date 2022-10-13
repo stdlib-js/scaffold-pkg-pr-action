@@ -200,6 +200,7 @@ async function main() {
     const openai = new openai_1.OpenAIApi(configuration);
     const workDir = (0, path_1.join)(process.env.GITHUB_WORKSPACE);
     const token = (0, core_1.getInput)('GITHUB_TOKEN');
+    const addedFiles = (0, core_1.getInput)('added-files');
     const octokit = (0, github_1.getOctokit)(token);
     (0, core_1.debug)('Working directory: ' + workDir);
     (0, core_1.debug)('Prompts directory: ' + PROMPTS_DIR);
@@ -210,28 +211,32 @@ async function main() {
     }
     switch (github_1.context.eventName) {
         case 'push':
-        case 'pull_request': {
+        case 'pull_request':
+        case 'pull_request_target': {
             let files;
             // Check whether PR was assigned to the "stdlib-bot" user:
-            if (github_1.context.eventName === 'pull_request') {
+            if (github_1.context.eventName === 'pull_request' || github_1.context.eventName === 'pull_request_target') {
                 if (github_1.context.payload.pull_request.assignee.login !== 'stdlib-bot') {
                     (0, core_1.debug)('PR not assigned to stdlib-bot. Skipping...');
                     return;
                 }
-                files = await octokit.rest.pulls.listFiles({
-                    'owner': github_1.context.repo.owner,
-                    'repo': github_1.context.repo.repo,
-                    'pull_number': github_1.context.payload.pull_request.number
-                });
-                files = files.data
-                    .filter(file => file.status === 'added')
-                    .map(file => file.filename);
+                if (addedFiles) {
+                    files = addedFiles.split(' ');
+                }
+                else {
+                    const res = await octokit.rest.pulls.listFiles({
+                        'owner': github_1.context.repo.owner,
+                        'repo': github_1.context.repo.repo,
+                        'pull_number': github_1.context.payload.pull_request.number
+                    });
+                    files = res.data
+                        .filter(file => file.status === 'added')
+                        .map(file => file.filename);
+                }
             }
             else {
-                files = (0, core_1.getInput)('added-files');
-                files = files.split(' ');
+                files = addedFiles.split(' ');
             }
-            (0, core_1.debug)('Files: ' + JSON.stringify(files.data));
             // Check whether the PR contains a new package's README.md file:
             const readme = files.find(f => {
                 return f.endsWith('README.md');
