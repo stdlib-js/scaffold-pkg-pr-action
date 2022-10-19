@@ -98,11 +98,11 @@ jobs:
           base_sha: ${{ github.event.pull_request.base.sha }}
           sha: ${{ github.event.pull_request.head.sha }}
 
-      # Extract file path of added `README.md` file:
-      - name: 'Extract file path of added `README.md` file'
+      # Extract file path of added or modified `README.md` file:
+      - name: 'Extract file path of added or modified `README.md` file'
         id: extract-readme
         run: |
-          pkg_path=$(echo ${{ steps.changed-files.outputs.added_files }} | tr ' ' '\n' | grep 'README.md' | head -n 1)
+          pkg_path=$(echo ${{ steps.changed-files.outputs.all_changed_files }} | tr ' ' '\n' | grep 'README.md' | head -n 1)
 
           # Keep substring after `lib/node_modules/@stdlib/` and strip trailing `README.md`:
           pkg_path=$(echo $pkg_path | sed 's/.*lib\/node_modules\/@stdlib\///g' | sed 's/\/README.md//g')
@@ -131,6 +131,18 @@ jobs:
           
           # Push `scaffold/<path>` branch to `stdlib-js/stdlib` repository:
           git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG" $SCAFFOLD_BRANCH
+
+      # Add comment to the pull request:
+      - name: 'Add comment to pull request'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Based off the `README.md` file in this pull request, the [stdlib-bot](https://github.com/stdlib-bot) will generate contents for the [${{ steps.scaffold.outputs.alias }}](../tree/${{ steps.extract-readme.outputs.pkg_path }}/${{ steps.scaffold.outputs.dir }}) package AND PUSHED THEM TO THE PULL REQUEST BRANCh.
+            
+            ## Notes
+            
+            *   :warning: The stdlib-bot uses AI to generate package content. The generated content is not guaranteed to be correct, and will require manual review and editing. :warning:
 
   # Define a job for scaffolding a package based off `README.md` contents:
   scaffold-internal:
@@ -190,7 +202,7 @@ jobs:
           echo "Pushing changes to $SLUG..."
           git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" HEAD:${{ steps.scaffold.outputs.path }}
           
-      # Add a comment to the pull request:
+      # Add comment to the pull request:
       - name: 'Add comment to pull request'
         uses: peter-evans/create-or-update-comment@v1
         with:
