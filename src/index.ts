@@ -33,6 +33,7 @@ import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 import extractCLISection from './extract_cli_section';
 import extractCSection from './extract_c_section';
+import { info } from 'console';
 
 
 // VARIABLES //
@@ -267,7 +268,7 @@ async function main(): Promise<void> {
 		
 		debug( 'New package directory: '+dir );
 		
-		// Hash map of whether the PR contains a new package's files:
+		// Hash map of whether the PR contains package files:
 		const has = {
 			'benchmark/benchmark.js': false,
 			'bin/cli': false,
@@ -286,18 +287,17 @@ async function main(): Promise<void> {
 			'src/Makefile': false,
 			'package.json': false
 		};
-		files.forEach( f => {
-			for ( const key in has ) {
-				if ( hasOwnProp( key, key ) ) {
-					if ( 
-						f.endsWith( key ) || // File is part of pull request...
-						existsSync( join( dir, key ) ) // Repository already includes respective file...
-					) {
-						has[ key ] = true;
-					}
+		for ( const key in has ) {
+			if ( hasOwnProp( has, key ) ) {
+				if ( 
+					files.some( f => f.endsWith( key ) ) || // File is part of pull request...
+					existsSync( join( dir, key ) ) // Repository already includes respective file...
+				) {
+					has[ key ] = true;
 				}
 			}
-		});
+		}
+		info( 'Existing files: '+JSON.stringify( has, null, 2 ) ); 
 		const usageSection = extractUsageSection( readmeText );
 		const examplesSection = extractExamplesSection( readmeText );
 		const cliSection = extractCLISection( readmeText );

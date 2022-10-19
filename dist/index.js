@@ -36,6 +36,7 @@ const extract_examples_section_1 = __importDefault(require("./extract_examples_s
 const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
 const extract_cli_section_1 = __importDefault(require("./extract_cli_section"));
 const extract_c_section_1 = __importDefault(require("./extract_c_section"));
+const console_1 = require("console");
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
@@ -253,7 +254,7 @@ async function main() {
             const readmePath = (0, path_1.join)(workDir, readme);
             const readmeText = (0, fs_1.readFileSync)(readmePath, 'utf8');
             (0, core_1.debug)('New package directory: ' + dir);
-            // Hash map of whether the PR contains a new package's files:
+            // Hash map of whether the PR contains package files:
             const has = {
                 'benchmark/benchmark.js': false,
                 'bin/cli': false,
@@ -272,17 +273,16 @@ async function main() {
                 'src/Makefile': false,
                 'package.json': false
             };
-            files.forEach(f => {
-                for (const key in has) {
-                    if ((0, assert_has_own_property_1.default)(key, key)) {
-                        if (f.endsWith(key) || // File is part of pull request...
-                            (0, fs_1.existsSync)((0, path_1.join)(dir, key)) // Repository already includes respective file...
-                        ) {
-                            has[key] = true;
-                        }
+            for (const key in has) {
+                if ((0, assert_has_own_property_1.default)(has, key)) {
+                    if (files.some(f => f.endsWith(key)) || // File is part of pull request...
+                        (0, fs_1.existsSync)((0, path_1.join)(dir, key)) // Repository already includes respective file...
+                    ) {
+                        has[key] = true;
                     }
                 }
-            });
+            }
+            (0, console_1.info)('Existing files: ' + JSON.stringify(has, null, 2));
             const usageSection = (0, extract_usage_section_1.default)(readmeText);
             const examplesSection = (0, extract_examples_section_1.default)(readmeText);
             const cliSection = (0, extract_cli_section_1.default)(readmeText);
