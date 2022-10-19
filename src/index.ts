@@ -22,7 +22,7 @@ import { debug, getInput, setFailed, setOutput } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { join } from 'path';
 import { Configuration, OpenAIApi } from 'openai';
-import { existsSync, mkdirSync, writeFileSync, readFileSync, fstat } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { parse } from 'yaml';
 import hasOwnProp from '@stdlib/assert-has-own-property';
 import currentYear from '@stdlib/time-current-year';
@@ -43,7 +43,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
-const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);$/;
+const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
 const WAIT_TIME = 10000; // 10 seconds
