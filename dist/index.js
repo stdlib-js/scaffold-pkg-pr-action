@@ -526,6 +526,7 @@ async function main() {
                     writeToDisk(pkgDir, 'include.gypi', includeGypi);
                 }
                 const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
+                (0, console_1.info)('main: ' + main);
                 const jsdocMatch = main.match(RE_MAIN_JSDOC);
                 const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
                 const aliasMatch = main.match(RE_EXPORT_NAME);
