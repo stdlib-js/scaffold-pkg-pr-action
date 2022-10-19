@@ -249,11 +249,12 @@ async function main() {
                 return;
             }
             // Extract the directory path for the new package:
-            const dir = readme.replace('/README.md', '');
+            const pkgDir = readme.replace('/README.md', '');
+            const pkgPath = (0, string_substring_after_1.default)(pkgDir, 'lib/node_modules/@stdlib/');
             // Load the package's README.md file:
             const readmePath = (0, path_1.join)(workDir, readme);
             const readmeText = (0, fs_1.readFileSync)(readmePath, 'utf8');
-            (0, core_1.debug)('New package directory: ' + dir);
+            (0, core_1.debug)('New package directory: ' + pkgDir);
             // Hash map of whether the PR contains package files:
             const has = {
                 'benchmark/benchmark.js': false,
@@ -266,17 +267,19 @@ async function main() {
                 'examples/index.js': false,
                 'lib/index.js': false,
                 'lib/main.js': false,
+                'lib/native.js': false,
                 'test/test.js': false,
                 'test/test.cli.js': false,
                 'binding.gyp': false,
                 'include.gypi': false,
                 'src/Makefile': false,
+                'src/addon.c': false,
                 'package.json': false
             };
             for (const key in has) {
                 if ((0, assert_has_own_property_1.default)(has, key)) {
                     if (files.some(f => f.endsWith(key)) || // File is part of pull request...
-                        (0, fs_1.existsSync)((0, path_1.join)(dir, key)) // Repository already includes respective file...
+                        (0, fs_1.existsSync)((0, path_1.join)(pkgDir, key)) // Repository already includes respective file...
                     ) {
                         has[key] = true;
                     }
@@ -300,7 +303,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = (response?.data?.choices[0].text || '') + SEE_ALSO;
-                        writeToDisk((0, path_1.join)(dir, 'docs'), 'repl.txt', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'docs'), 'repl.txt', txt);
                     }
                 }
                 catch (err) {
@@ -320,7 +323,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(dir, 'lib'), 'index.js', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'index.js', txt);
                     }
                 }
                 catch (err) {
@@ -343,7 +346,7 @@ async function main() {
                         let txt = response?.data?.choices[0].text || '';
                         jsdoc = RE_JSDOC.exec(txt);
                         txt = LICENSE_TXT + '\n\'use strict\';\n' + txt;
-                        writeToDisk((0, path_1.join)(dir, 'lib'), 'main.js', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'main.js', txt);
                     }
                 }
                 catch (err) {
@@ -363,7 +366,7 @@ async function main() {
                         });
                         if (response.data && response.data.choices) {
                             const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                            writeToDisk((0, path_1.join)(dir, 'benchmark'), 'benchmark.js', txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'benchmark'), 'benchmark.js', txt);
                         }
                     }
                     catch (err) {
@@ -383,7 +386,7 @@ async function main() {
                         if (response.data && response.data.choices) {
                             ts = response?.data?.choices[0].text || '';
                             const txt = LICENSE_TXT + '\n// TypeScript Version: 2.0\n' + ts;
-                            writeToDisk((0, path_1.join)(dir, 'docs', 'types'), 'index.d.ts', txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'docs', 'types'), 'index.d.ts', txt);
                         }
                     }
                     catch (err) {
@@ -402,7 +405,7 @@ async function main() {
                         if (response.data && response.data.choices) {
                             let txt = response?.data?.choices[0].text || '';
                             txt = LICENSE_TXT + txt;
-                            writeToDisk((0, path_1.join)(dir, 'docs', 'types'), 'test.ts', txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'docs', 'types'), 'test.ts', txt);
                         }
                     }
                     catch (err) {
@@ -423,7 +426,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(dir, 'examples'), 'index.js', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'examples'), 'index.js', txt);
                     }
                 }
                 catch (err) {
@@ -442,7 +445,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(dir, 'test'), 'test.js', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.js', txt);
                     }
                 }
                 catch (err) {
@@ -462,7 +465,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(dir, 'bin'), 'cli', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'bin'), 'cli', txt);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -470,7 +473,7 @@ async function main() {
                     const matches = RE_CLI_USAGE.exec(cliSection);
                     if (matches) {
                         const txt = matches[1] + '\n';
-                        writeToDisk((0, path_1.join)(dir, 'docs'), 'usage.txt', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'docs'), 'usage.txt', txt);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -483,7 +486,7 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = (0, string_trim_1.default)(response?.data?.choices[0].text || '') + '\n';
-                        writeToDisk((0, path_1.join)(dir, 'etc'), 'cli_opts.json', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'etc'), 'cli_opts.json', txt);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -498,38 +501,117 @@ async function main() {
                     });
                     if (response.data && response.data.choices) {
                         const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(dir, 'test'), 'test.cli.js', txt);
+                        writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.cli.js', txt);
                     }
                     await sleep(WAIT_TIME);
                 }
                 let stdinErrorFixture = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt'), 'utf8');
                 stdinErrorFixture = stdinErrorFixture.replace('{{year}}', CURRENT_YEAR);
-                writeToDisk((0, path_1.join)(dir, 'test', 'fixtures'), 'stdin_error.js.txt', stdinErrorFixture);
+                writeToDisk((0, path_1.join)(pkgDir, 'test', 'fixtures'), 'stdin_error.js.txt', stdinErrorFixture);
             }
             if (cSection) {
                 if (!has['src/Makefile']) {
                     let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'src', 'Makefile.txt'), 'utf8');
                     makefile = makefile.replace('{{year}}', CURRENT_YEAR);
-                    writeToDisk((0, path_1.join)(dir, 'src'), 'Makefile', makefile);
+                    writeToDisk((0, path_1.join)(pkgDir, 'src'), 'Makefile', makefile);
                 }
                 if (!has['binding.gyp']) {
                     let bindingGyp = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'binding_gyp.txt'), 'utf8');
                     bindingGyp = bindingGyp.replace('{{year}}', CURRENT_YEAR);
-                    writeToDisk(dir, 'binding.gyp', bindingGyp);
+                    writeToDisk(pkgDir, 'binding.gyp', bindingGyp);
                 }
                 if (!has['include.gypi']) {
                     let includeGypi = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include_gypi.txt'), 'utf8');
                     includeGypi = includeGypi.replace('{{year}}', CURRENT_YEAR);
-                    writeToDisk(dir, 'include.gypi', includeGypi);
+                    writeToDisk(pkgDir, 'include.gypi', includeGypi);
+                }
+                const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
+                const jsdocMatch = main.match(RE_MAIN_JSDOC);
+                const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
+                const aliasMatch = main.match(RE_EXPORT_NAME);
+                (0, core_1.debug)('Package alias: ' + aliasMatch[1]);
+                if (!has['lib/native.js']) {
+                    let native = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'lib', 'native_js.txt'), 'utf8');
+                    native = native.replace('{{year}}', CURRENT_YEAR);
+                    native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdocMatch[1]);
+                    native = (0, string_replace_1.default)(native, '{{alias}}', aliasMatch[1]);
+                    const reParams = new RegExp('function ' + aliasMatch[1] + '\\(([^)]+)\\)', 'm');
+                    const paramsMatch = main.match(reParams);
+                    (0, core_1.debug)('Function parameters: ' + paramsMatch[1]);
+                    native = (0, string_replace_1.default)(native, '{{params}}', paramsMatch[1]);
+                    writeToDisk((0, path_1.join)(pkgDir, 'lib'), 'native.js', native);
+                }
+                const includePath = (0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath);
+                if (!(0, fs_1.existsSync)(includePath)) {
+                    (0, fs_1.mkdirSync)(includePath, {
+                        'recursive': true
+                    });
+                }
+                const code = (0, string_substring_after_1.default)(main, '\'use strict\';');
+                const dependencies = new Set();
+                if (!has['src/addon.c']) {
+                    try {
+                        const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'addon_c.txt'), 'utf8');
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': addon.replace('{{input}}', code)
+                        });
+                        if (response.data && response.data.choices) {
+                            const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
+                            extractDepsFromIncludes(dependencies, txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'src'), 'addon.c', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                }
+                if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.c'))) {
+                    try {
+                        const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_c.txt'), 'utf8');
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': addon.replace('{{input}}', code)
+                        });
+                        if (response.data && response.data.choices) {
+                            const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
+                            extractDepsFromIncludes(dependencies, txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                }
+                if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.h'))) {
+                    try {
+                        const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_h.txt'), 'utf8');
+                        const response = await openai.createCompletion({
+                            ...OPENAI_SETTINGS,
+                            'prompt': addon.replace('{{input}}', code)
+                        });
+                        if (response.data && response.data.choices) {
+                            const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
+                            writeToDisk((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), aliasMatch[1] + '.h', txt);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                }
+                if (!has['manifest.json']) {
+                    let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
+                    manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n,\t\t\t\t'));
+                    manifest = (0, string_replace_1.default)(manifest, '{{src}}', '"./src/' + aliasMatch[1] + '.c"');
+                    writeToDisk(pkgDir, 'manifest.json', manifest);
                 }
             }
-            const path = (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/');
-            (0, core_1.setOutput)('dir', dir);
-            (0, core_1.setOutput)('path', path);
-            (0, core_1.setOutput)('alias', usageSection.substring(0, usageSection.indexOf(' =')));
             if (!has['package.json']) {
-                writePackageJSON(dir, path, cli ? cli[1] : null);
+                writePackageJSON(pkgDir, pkgPath, cli ? cli[1] : null);
             }
+            (0, core_1.setOutput)('dir', pkgDir);
+            (0, core_1.setOutput)('path', pkgPath);
+            (0, core_1.setOutput)('alias', usageSection.substring(0, usageSection.indexOf(' =')));
             break;
         }
         case 'issue_comment': {
@@ -760,15 +842,6 @@ async function main() {
             const actionType = (0, core_1.getInput)('type', { required: true });
             const pkgDir = (0, path_1.join)(workDir, 'lib', 'node_modules', '@stdlib', pkgPath);
             if (actionType === 'native-addon') {
-                const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
-                const jsdocMatch = main.match(RE_MAIN_JSDOC);
-                const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
-                const aliasMatch = main.match(RE_EXPORT_NAME);
-                (0, core_1.debug)('Package alias: ' + aliasMatch[1]);
-                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'src'));
-                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), {
-                    'recursive': true
-                });
                 let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'src', 'Makefile.txt'), 'utf8');
                 makefile = makefile.replace('{{year}}', CURRENT_YEAR);
                 writeToDisk((0, path_1.join)(pkgDir, 'src'), 'Makefile', makefile);
@@ -778,6 +851,15 @@ async function main() {
                 let includeGypi = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include_gypi.txt'), 'utf8');
                 includeGypi = includeGypi.replace('{{year}}', CURRENT_YEAR);
                 writeToDisk(pkgDir, 'include.gypi', includeGypi);
+                const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
+                const jsdocMatch = main.match(RE_MAIN_JSDOC);
+                const RE_EXPORT_NAME = /module\.exports = ([^;]+);/;
+                const aliasMatch = main.match(RE_EXPORT_NAME);
+                (0, core_1.debug)('Package alias: ' + aliasMatch[1]);
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'src'));
+                (0, fs_1.mkdirSync)((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), {
+                    'recursive': true
+                });
                 let native = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'lib', 'native_js.txt'), 'utf8');
                 native = native.replace('{{year}}', CURRENT_YEAR);
                 native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdocMatch[1]);
