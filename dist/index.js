@@ -27,6 +27,7 @@ const path_1 = require("path");
 const openai_1 = require("openai");
 const fs_1 = require("fs");
 const yaml_1 = require("yaml");
+const assert_has_own_property_1 = __importDefault(require("@stdlib/assert-has-own-property"));
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
 const string_substring_after_1 = __importDefault(require("@stdlib/string-substring-after"));
 const string_trim_1 = __importDefault(require("@stdlib/string-trim"));
@@ -34,6 +35,7 @@ const string_replace_1 = __importDefault(require("@stdlib/string-replace"));
 const extract_examples_section_1 = __importDefault(require("./extract_examples_section"));
 const extract_usage_section_1 = __importDefault(require("./extract_usage_section"));
 const extract_cli_section_1 = __importDefault(require("./extract_cli_section"));
+const extract_c_section_1 = __importDefault(require("./extract_c_section"));
 // VARIABLES //
 const RE_YAML = /```yaml([\s\S]+?)```/;
 const RE_JS = /```js([\s\S]+?)```/;
@@ -230,19 +232,19 @@ async function main() {
                         'pull_number': github_1.context.payload.pull_request.number
                     });
                     files = res.data
-                        .filter(file => file.status === 'added')
+                        .filter(file => file.status === 'added' || file.status === 'modified')
                         .map(file => file.filename);
                 }
             }
             else {
                 files = addedFiles.split(' ');
             }
-            // Check whether the PR contains a new package's README.md file:
+            // Check whether the PR contains a new package's README.md file or a modified README.md file:
             const readme = files.find(f => {
                 return f.endsWith('README.md');
             });
             if (readme === void 0) {
-                (0, core_1.debug)('PR does not contain a new package\'s README.md file. Skipping...');
+                (0, core_1.debug)('PR does not contain a new package\'s README.md file or a modified README.md file. Skipping...');
                 return;
             }
             // Extract the directory path for the new package:
@@ -264,49 +266,26 @@ async function main() {
                 'lib/index.js': false,
                 'lib/main.js': false,
                 'test/test.js': false,
-                'test/test.cli.js': false
+                'test/test.cli.js': false,
+                'binding.gyp': false,
+                'include.gypi': false,
+                'src/Makefile': false
             };
             files.forEach(f => {
-                if (f.endsWith('benchmark/benchmark.js')) {
-                    has['benchmark/benchmark.js'] = true;
-                }
-                if (f.endsWith('bin/cli')) {
-                    has['bin/cli'] = true;
-                }
-                if (f.endsWith('docs/types/index.d.ts')) {
-                    has['docs/types/index.d.ts'] = true;
-                }
-                if (f.endsWith('docs/types/test.ts')) {
-                    has['docs/types/test.ts'] = true;
-                }
-                if (f.endsWith('docs/repl.txt')) {
-                    has['docs/repl.txt'] = true;
-                }
-                if (f.endsWith('docs/usage.txt')) {
-                    has['docs/usage.txt'] = true;
-                }
-                if (f.endsWith('etc/cli_opts.json')) {
-                    has['etc/cli_opts.json'] = true;
-                }
-                if (f.endsWith('examples/index.js')) {
-                    has['examples/index.js'] = true;
-                }
-                if (f.endsWith('lib/index.js')) {
-                    has['lib/index.js'] = true;
-                }
-                if (f.endsWith('lib/main.js')) {
-                    has['lib/main.js'] = true;
-                }
-                if (f.endsWith('test/test.js')) {
-                    has['test/test.js'] = true;
-                }
-                if (f.endsWith('test/test.cli.js')) {
-                    has['test/test.cli.js'] = true;
+                for (const key in has) {
+                    if ((0, assert_has_own_property_1.default)(key, key)) {
+                        if (f.endsWith(key) || // File is part of pull request...
+                            (0, fs_1.existsSync)((0, path_1.join)(workDir, key)) // Repository already includes respective file...
+                        ) {
+                            has[key] = true;
+                        }
+                    }
                 }
             });
             const usageSection = (0, extract_usage_section_1.default)(readmeText);
             const examplesSection = (0, extract_examples_section_1.default)(readmeText);
             const cliSection = (0, extract_cli_section_1.default)(readmeText);
+            const cSection = (0, extract_c_section_1.default)(readmeText);
             let jsdoc;
             let cli;
             if (!has['docs/repl.txt']) {
@@ -525,6 +504,23 @@ async function main() {
                 let stdinErrorFixture = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt'), 'utf8');
                 stdinErrorFixture = stdinErrorFixture.replace('{{year}}', CURRENT_YEAR);
                 writeToDisk((0, path_1.join)(dir, 'test', 'fixtures'), 'stdin_error.js.txt', stdinErrorFixture);
+            }
+            if (cSection) {
+                if (!has['src/Makefile']) {
+                    let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'src', 'Makefile.txt'), 'utf8');
+                    makefile = makefile.replace('{{year}}', CURRENT_YEAR);
+                    writeToDisk((0, path_1.join)(dir, 'src'), 'Makefile', makefile);
+                }
+                if (!has['binding.gyp']) {
+                    let bindingGyp = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'binding_gyp.txt'), 'utf8');
+                    bindingGyp = bindingGyp.replace('{{year}}', CURRENT_YEAR);
+                    writeToDisk(dir, 'binding.gyp', bindingGyp);
+                }
+                if (!has['include.gypi']) {
+                    let includeGypi = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include_gypi.txt'), 'utf8');
+                    includeGypi = includeGypi.replace('{{year}}', CURRENT_YEAR);
+                    writeToDisk(dir, 'include.gypi', includeGypi);
+                }
             }
             const path = (0, string_substring_after_1.default)(dir, 'lib/node_modules/@stdlib/');
             (0, core_1.setOutput)('dir', dir);

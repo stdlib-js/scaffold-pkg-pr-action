@@ -24,6 +24,7 @@ import { join } from 'path';
 import { Configuration, OpenAIApi } from 'openai';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, fstat } from 'fs';
 import { parse } from 'yaml';
+import hasOwnProp from '@stdlib/assert-has-own-property';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
 import trim from '@stdlib/string-trim';
@@ -31,6 +32,7 @@ import replace from '@stdlib/string-replace';
 import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 import extractCLISection from './extract_cli_section';
+import extractCSection from './extract_c_section';
 
 
 // VARIABLES //
@@ -240,7 +242,7 @@ async function main(): Promise<void> {
 					'pull_number': context.payload.pull_request.number
 				});
 				files = res.data
-					.filter( file => file.status === 'added' )
+					.filter( file => file.status === 'added' || file.status === 'modified' )
 					.map( file => file.filename );
 			}
 		}
@@ -248,12 +250,12 @@ async function main(): Promise<void> {
 			files = addedFiles.split( ' ' );
 		}
 			
-		// Check whether the PR contains a new package's README.md file:
+		// Check whether the PR contains a new package's README.md file or a modified README.md file:
 		const readme = files.find( f => {
 			return f.endsWith( 'README.md' );
 		});
 		if ( readme === void 0 ) {
-			debug( 'PR does not contain a new package\'s README.md file. Skipping...' );
+			debug( 'PR does not contain a new package\'s README.md file or a modified README.md file. Skipping...' );
 			return;
 		}
 		// Extract the directory path for the new package:
@@ -278,49 +280,27 @@ async function main(): Promise<void> {
 			'lib/index.js': false,
 			'lib/main.js': false,
 			'test/test.js': false,
-			'test/test.cli.js': false
+			'test/test.cli.js': false,
+			'binding.gyp': false,
+			'include.gypi': false,
+			'src/Makefile': false
 		};
 		files.forEach( f => {
-			if ( f.endsWith( 'benchmark/benchmark.js' ) ) {
-				has['benchmark/benchmark.js'] = true;
-			}
-			if ( f.endsWith( 'bin/cli' ) ) {
-				has['bin/cli'] = true;
-			}
-			if ( f.endsWith( 'docs/types/index.d.ts' ) ) {
-				has['docs/types/index.d.ts'] = true;
-			}
-			if ( f.endsWith( 'docs/types/test.ts' ) ) {
-				has['docs/types/test.ts'] = true;
-			}
-			if ( f.endsWith( 'docs/repl.txt' ) ) {
-				has['docs/repl.txt'] = true;
-			}
-			if ( f.endsWith( 'docs/usage.txt' ) ) {
-				has['docs/usage.txt'] = true;
-			}
-			if ( f.endsWith( 'etc/cli_opts.json' ) ) {
-				has['etc/cli_opts.json'] = true;
-			}
-			if ( f.endsWith( 'examples/index.js' ) ) {
-				has['examples/index.js'] = true;
-			}
-			if ( f.endsWith( 'lib/index.js' ) ) {
-				has['lib/index.js'] = true;
-			}
-			if ( f.endsWith( 'lib/main.js' ) ) {
-				has['lib/main.js'] = true;
-			}
-			if ( f.endsWith( 'test/test.js' ) ) {
-				has['test/test.js'] = true;
-			}
-			if ( f.endsWith( 'test/test.cli.js' ) ) {
-				has['test/test.cli.js'] = true;
+			for ( const key in has ) {
+				if ( hasOwnProp( key, key ) ) {
+					if ( 
+						f.endsWith( key ) || // File is part of pull request...
+						existsSync( join( workDir, key ) ) // Repository already includes respective file...
+					) {
+						has[ key ] = true;
+					}
+				}
 			}
 		});
 		const usageSection = extractUsageSection( readmeText );
 		const examplesSection = extractExamplesSection( readmeText );
 		const cliSection = extractCLISection( readmeText );
+		const cSection = extractCSection( readmeText );
 		let jsdoc;
 		let cli;
 		if ( !has['docs/repl.txt'] ) {
@@ -531,6 +511,23 @@ async function main(): Promise<void> {
 			let stdinErrorFixture = readFileSync( join( SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt' ), 'utf8' );
 			stdinErrorFixture = stdinErrorFixture.replace( '{{year}}', CURRENT_YEAR );
 			writeToDisk( join( dir, 'test', 'fixtures' ), 'stdin_error.js.txt', stdinErrorFixture );
+		}
+		if ( cSection ) {
+			if ( !has[ 'src/Makefile' ] ) {
+				let makefile = readFileSync( join( SNIPPETS_DIR, 'src', 'Makefile.txt' ), 'utf8' );
+				makefile = makefile.replace( '{{year}}', CURRENT_YEAR );
+				writeToDisk( join( dir, 'src' ), 'Makefile', makefile );
+			}
+			if ( !has[ 'binding.gyp' ] ) {
+				let bindingGyp = readFileSync( join( SNIPPETS_DIR, 'binding_gyp.txt' ), 'utf8' );
+				bindingGyp = bindingGyp.replace( '{{year}}', CURRENT_YEAR );
+				writeToDisk( dir, 'binding.gyp', bindingGyp );
+			}
+			if ( !has[ 'include.gypi' ] ) {
+				let includeGypi = readFileSync( join( SNIPPETS_DIR, 'include_gypi.txt' ), 'utf8' );
+				includeGypi = includeGypi.replace( '{{year}}', CURRENT_YEAR );
+				writeToDisk( dir, 'include.gypi', includeGypi );	
+			}
 		}
 		const path = substringAfter( dir, 'lib/node_modules/@stdlib/' );
 		setOutput( 'dir', dir );	
@@ -795,7 +792,7 @@ async function main(): Promise<void> {
 			writeToDisk( join( pkgDir, 'lib' ), 'native.js', native );
 						
 			const code = substringAfter( main, '\'use strict\';' );
-			const dependencies = new Set();
+			const dependencies: Set<string> = new Set();
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'addon_c.txt' ), 'utf8' );
 				const response = await openai.createCompletion({
