@@ -41,6 +41,7 @@ jobs:
       - name: 'Check whether the pull request originates from `stdlib-js` organization'
         id: check-external
         run: |
+          echo ${{ github.event.pull_request }}
           if [ ${{ github.event.pull_request.head.repo.owner.login }} = "stdlib-js" ]; then
             echo "::set-output name=external::false"
           else
