@@ -41,7 +41,7 @@ jobs:
       - name: 'Check whether the pull request originates from `stdlib-js` organization'
         id: check-external
         run: |
-          if [ ${{ github.event.pull_request.head.repo.owner }} = "stdlib-js" ]; then
+          if [ ${{ github.event.pull_request.head.repo.owner.login }} = "stdlib-js" ]; then
             echo "::set-output name=external::false"
           else
             echo "::set-output name=external::true"
@@ -54,7 +54,7 @@ jobs:
     needs: [check]
 
     # Only run this job if the pull request originates from an external repository and the pull request is assigned to `stdlib-js-bot`:
-    if: needs.check.outputs.external == 'true' && github.event.pull_request.assignee.login == 'stdlib-js-bot'
+    if: needs.check.outputs.external == 'true' && github.event.pull_request.assignee.login == 'stdlib-bot'
 
     # Define the type of virtual host machine on which to run the job:
     runs-on: ubuntu-latest
@@ -184,7 +184,7 @@ jobs:
     needs: [check]
 
     # Only run this job if the pull request originates from the `stdlib-js` organization and the pull request is assigned to `stdlib-js-bot`:
-    if: needs.check.outputs.external == 'false' && github.event.pull_request.assignee.login == 'stdlib-js-bot'
+    if: needs.check.outputs.external == 'false' && github.event.pull_request.assignee.login == 'stdlib-bot'
 
     # Define the type of virtual host machine on which to run the job:
     runs-on: ubuntu-latest
