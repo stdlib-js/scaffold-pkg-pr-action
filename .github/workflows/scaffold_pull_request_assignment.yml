@@ -41,7 +41,6 @@ jobs:
       - name: 'Check whether the pull request originates from `stdlib-js` organization'
         id: check-external
         run: |
-          echo ${{ github.event.pull_request }}
           if [ ${{ github.event.pull_request.head.repo.owner.login }} = "stdlib-js" ]; then
             echo "::set-output name=external::false"
           else
@@ -228,7 +227,7 @@ jobs:
         run: |
           SLUG=${{ github.repository }}
           echo "Pushing changes to $SLUG..."
-          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" HEAD:${{ steps.scaffold.outputs.path }}
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" HEAD:${{ github.event.pull_request.head.ref }}
 
       # Add comment to the pull request:
       - name: 'Add comment to pull request'

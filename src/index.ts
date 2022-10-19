@@ -283,14 +283,15 @@ async function main(): Promise<void> {
 			'test/test.cli.js': false,
 			'binding.gyp': false,
 			'include.gypi': false,
-			'src/Makefile': false
+			'src/Makefile': false,
+			'package.json': false
 		};
 		files.forEach( f => {
 			for ( const key in has ) {
 				if ( hasOwnProp( key, key ) ) {
 					if ( 
 						f.endsWith( key ) || // File is part of pull request...
-						existsSync( join( workDir, key ) ) // Repository already includes respective file...
+						existsSync( join( dir, key ) ) // Repository already includes respective file...
 					) {
 						has[ key ] = true;
 					}
@@ -533,7 +534,10 @@ async function main(): Promise<void> {
 		setOutput( 'dir', dir );	
 		setOutput( 'path', path );
 		setOutput( 'alias', usageSection.substring( 0, usageSection.indexOf( ' =' ) ) );
-		writePackageJSON( dir, path, cli ? cli[ 1 ] : null );
+		
+		if ( !has[ 'package.json' ] ) {
+			writePackageJSON( dir, path, cli ? cli[ 1 ] : null );
+		}
 		break;
 	}
 	case 'issue_comment': {

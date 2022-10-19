@@ -269,13 +269,14 @@ async function main() {
                 'test/test.cli.js': false,
                 'binding.gyp': false,
                 'include.gypi': false,
-                'src/Makefile': false
+                'src/Makefile': false,
+                'package.json': false
             };
             files.forEach(f => {
                 for (const key in has) {
                     if ((0, assert_has_own_property_1.default)(key, key)) {
                         if (f.endsWith(key) || // File is part of pull request...
-                            (0, fs_1.existsSync)((0, path_1.join)(workDir, key)) // Repository already includes respective file...
+                            (0, fs_1.existsSync)((0, path_1.join)(dir, key)) // Repository already includes respective file...
                         ) {
                             has[key] = true;
                         }
@@ -526,7 +527,9 @@ async function main() {
             (0, core_1.setOutput)('dir', dir);
             (0, core_1.setOutput)('path', path);
             (0, core_1.setOutput)('alias', usageSection.substring(0, usageSection.indexOf(' =')));
-            writePackageJSON(dir, path, cli ? cli[1] : null);
+            if (!has['package.json']) {
+                writePackageJSON(dir, path, cli ? cli[1] : null);
+            }
             break;
         }
         case 'issue_comment': {
