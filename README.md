@@ -63,7 +63,7 @@ A workflow that is triggered when a `README.md` file is pushed to a branch of th
 A workflow that is triggered when the action is manually triggered via the GitHub Actions tab by dispatching a new workflow run. The following inputs are required:
 
 -   `package path`: The path to the package for which to scaffold the contents. The path is relative to the `@stdlib` root directory. For example, to scaffold contents for the `@stdlib/math/base/special/abs` package, the path would be `math/base/special/abs`.
-    -   `scaffold type`: The type of scaffolding to perform. The following types are supported:
+-   `scaffold type`: The type of scaffolding to perform. The following types are supported:
     -   `native-addon`: Scaffolds a native addon implementation for an existing package.
 
 ### 4. Add a scaffold comment to a RFC issue thread to scaffold a new package PR based on the RFC
