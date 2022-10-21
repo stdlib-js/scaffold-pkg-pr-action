@@ -30,13 +30,43 @@ limitations under the License.
 
 This repository contains a GitHub action for scaffolding a new `stdlib` package via GPT-3. 
 
-There are currently two supported ways of using the action:
+There are currently four supported ways of using the action:
 
 ### 1. Assigning a PR to the `stdlib-bot` account when a `README.md` file is present
 
-Assigning a pull request for a new package to the `stdlib-bot` user account. The action will then automatically scaffold a new package contents based off the `README.md` file of the pull request. The action will then commit the scaffolded package contents to the pull request branch and push the changes to the pull request. This assumes that the pull request branch contains a finished `README.md` file for the new package (readme-driven development).
+#### 1a) New package's `README.md` file
 
-### 2. Add a scaffold comment to a RFC issue thread to scaffold a new package PR based on the RFC
+A workflow that is triggered when a pull request is assigned to the `stdlib-bot` user account. The action automatically scaffolds a new package's contents based off a new `README.md`. This assumes that the pull request branch contains a finished `README.md` file for the new package (readme-driven development). 
+
+In case the pull request originates from a branch on the main repo, the action will then commit the scaffolded package contents to the pull request branch and push them to the main repository. In case the pull request originates from a fork, the action will create a new branch of the name `scaffold<issue-number>/<pkg>` and push it to the main repository (where `<pkg>` is the name of the package after `@stdlib` such as `math/base/special/abs` and `<issue-number>` is the pull request number). 
+
+### 1b) Modified `README.md` file of an existing package
+
+A workflow that is triggered when a pull request with a modified `README.md` file is assigned to the `stdlib-bot` user account. The action automatically updates the package's contents based off the `README.md` by adding new files that are currently missing. A common use-case is adding new sections for e.g. a C implementation or a CLI interface to a package that currently only has a JavaScript implementation and then triggering the action to scaffold the new files. 
+
+In case the pull request originates from a branch on the main repo, the action will then commit the updated package contents to the pull request branch and push them to the main repository. In case the pull request originates from a fork, the action will create a new branch of the name `scaffold<issue-number>/<pkg>` and push it to the main repository (where `<pkg>` is the name of the package after `@stdlib` such as `math/base/special/abs` and `<issue-number>` is the pull request number).
+
+### 2. Pushing a `README.md` file to a branch of the main repository that starts with `scaffold/` 
+
+#### 2a) New package's `README.md` file
+
+A workflow that is triggered when a `README.md` file is pushed to a branch of the main repository that starts with `scaffold/`. The action automatically scaffolds a new package's contents based off a new `README.md`. This assumes that the branch contains a finished `README.md` file for the new package (readme-driven development).
+
+The action will then commit the scaffolded package contents to the branch and push them to the main repository.
+
+#### 2b) Modified `README.md` file of an existing package
+
+A workflow that is triggered when a `README.md` file is pushed to a branch of the main repository that starts with `scaffold/`. The action automatically updates the package's contents based off the `README.md` by adding new files that are currently missing. A common use-case is adding new sections for e.g. a C implementation or a CLI interface to a package that currently only has a JavaScript implementation and then triggering the action to scaffold the new files.
+
+### 3. Manually triggering the action via the GitHub Actions tab 
+
+A workflow that is triggered when the action is manually triggered via the GitHub Actions tab by dispatching a new workflow run. The following inputs are required:
+
+-   `package path`: The path to the package for which to scaffold the contents. The path is relative to the `@stdlib` root directory. For example, to scaffold contents for the `@stdlib/math/base/special/abs` package, the path would be `math/base/special/abs`.
+    -   `scaffold type`: The type of scaffolding to perform. The following types are supported:
+    -   `native-addon`: Scaffolds a native addon implementation for an existing package.
+
+### 4. Add a scaffold comment to a RFC issue thread to scaffold a new package PR based on the RFC
 
 In a GitHub RFC issue, one may add a scaffolding comment. The comment should contain the JSDoc of all the exports of the package. The action will then automatically scaffold  package contents based off the comment, commit the scaffolded package contents to a new branch and open a pull request. The comment should be of the form:
 
@@ -100,7 +130,7 @@ jobs:
     # Define the sequence of job steps...
     steps:
       # Checkout the current branch:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Run the command to scaffold a package:
       - name: Scaffold package
