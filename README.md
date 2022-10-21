@@ -40,7 +40,7 @@ A workflow that is triggered when a pull request is assigned to the `stdlib-bot`
 
 In case the pull request originates from a branch on the main repo, the action will then commit the scaffolded package contents to the pull request branch and push them to the main repository. In case the pull request originates from a fork, the action will create a new branch of the name `scaffold<issue-number>/<pkg>` and push it to the main repository (where `<pkg>` is the name of the package after `@stdlib` such as `math/base/special/abs` and `<issue-number>` is the pull request number). 
 
-### 1b) Modified `README.md` file of an existing package
+#### 1b) Modified `README.md` file of an existing package
 
 A workflow that is triggered when a pull request with a modified `README.md` file is assigned to the `stdlib-bot` user account. The action automatically updates the package's contents based off the `README.md` by adding new files that are currently missing. A common use-case is adding new sections for e.g. a C implementation or a CLI interface to a package that currently only has a JavaScript implementation and then triggering the action to scaffold the new files. 
 
