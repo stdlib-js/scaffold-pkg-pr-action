@@ -22,7 +22,7 @@
         "@stdlib/string-trim": "^0.0.9",
         "@stdlib/time-current-year": "^0.0.2",
         "openai": "^3.0.0",
-        "p-retry": "^5.1.1",
+        "p-retry": "^4.6.1",
         "yaml": "^2.1.3"
     },
     "devDependencies": {
