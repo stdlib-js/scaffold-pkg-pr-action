@@ -18,12 +18,13 @@
 
 // MODULES //
 
-import { debug, getInput, setFailed, setOutput } from '@actions/core';
-import { context, getOctokit } from '@actions/github';
-import { join } from 'path';
-import { Configuration, OpenAIApi } from 'openai';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
-import { parse } from 'yaml';
+import { join } from 'path';
+import { debug, getInput, setFailed, setOutput, info } from '@actions/core';
+import { context, getOctokit } from '@actions/github';
+import { Configuration, OpenAIApi } from 'openai';
+import { parse } from 'yaml'
+import pRetry, { AbortError } from 'p-retry';
 import hasOwnProp from '@stdlib/assert-has-own-property';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
@@ -33,7 +34,6 @@ import extractExamplesSection from './extract_examples_section';
 import extractUsageSection from './extract_usage_section';
 import extractCLISection from './extract_cli_section';
 import extractCSection from './extract_c_section';
-import { info } from 'console';
 
 
 // VARIABLES //
@@ -58,6 +58,17 @@ const OPENAI_SETTINGS = {
 	'stop': [ 'Input (', 'Output (' ],
 	// 'user': context.actor
 };
+const OPENAI_API_KEY = getInput( 'OPENAI_API_KEY', { 
+	required: true 
+});
+const configuration = new Configuration({
+	'apiKey': OPENAI_API_KEY
+});
+const openai = new OpenAIApi( configuration );
+const workDir = join( process.env.GITHUB_WORKSPACE );
+const token = getInput( 'GITHUB_TOKEN' );
+const addedFiles = getInput( 'added-files' );
+const octokit = getOctokit( token );
 const LICENSE_TXT = `/**
 * @license Apache-2.0
 *
@@ -182,6 +193,25 @@ async function sleep( ms: number ): Promise<void> {
 	return new Promise( resolve => setTimeout( resolve, ms ) );
 }
 
+async function generateCompletions( config ) {
+	const run = async () => {
+		const response = await openai.createCompletion({
+			...OPENAI_SETTINGS,
+			...config 
+		});
+		if ( response.status === 404 ) {
+			throw new AbortError(response.statusText);
+		}
+		return response;
+	};
+	return pRetry( run, {
+		retries: 5,
+		onFailedAttempt: ( error ) => {
+			info( `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.` );
+		}
+	});	
+}
+
 function extractDepsFromIncludes( dependencies: Set<string>, code: string ): Set<string> {
 	// Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
 	const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/g;
@@ -203,17 +233,6 @@ function extractDepsFromIncludes( dependencies: Set<string>, code: string ): Set
 * @returns {Promise<void>} promise indicating completion
 */ 
 async function main(): Promise<void> {
-	const OPENAI_API_KEY = getInput( 'OPENAI_API_KEY', { 
-		required: true 
-	});
-	const configuration = new Configuration({
-		'apiKey': OPENAI_API_KEY
-	});
-	const openai = new OpenAIApi( configuration );
-	const workDir = join( process.env.GITHUB_WORKSPACE );
-	const token = getInput( 'GITHUB_TOKEN' );
-	const addedFiles = getInput( 'added-files' );
-	const octokit = getOctokit( token );
 	debug( 'Working directory: '+workDir );
 	debug( 'Prompts directory: '+PROMPTS_DIR );
 	
@@ -310,8 +329,7 @@ async function main(): Promise<void> {
 		if ( !has['docs/repl.txt'] ) {
 			debug( 'PR does not contain a new package\'s REPL file. Scaffolding...' );
 			try {
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'model': 'davinci:ft-carnegie-mellon-university-2022-09-17-02-09-31',
 					'prompt': usageSection + examplesSection + '\n|>|\n\n',
 					'stop': [ 'END', '|>|' ]
@@ -329,8 +347,7 @@ async function main(): Promise<void> {
 		if ( !has['lib/index.js'] ) {
 			debug( 'PR does not contain a new package\'s index file. Scaffolding...' );
 			try {
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'model': 'davinci:ft-carnegie-mellon-university:readme-to-index-2022-10-04-19-00-45',
 					'prompt': usageSection + '\n|>|\n\n',
 					'stop': [ 'END', '|>|' ]
@@ -351,8 +368,7 @@ async function main(): Promise<void> {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'main_js.txt' ), 'utf8' )
 					.replace( '{{input}}', usageSection );
 				debug( 'Prompt: '+PROMPT );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
@@ -372,8 +388,7 @@ async function main(): Promise<void> {
 				try {
 					const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt' ), 'utf8' )
 						.replace( '{{input}}', jsdoc[ 0 ] );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': PROMPT
 					});
 					if ( response.data && response.data.choices ) {
@@ -390,8 +405,7 @@ async function main(): Promise<void> {
 				try {
 					const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt' ), 'utf8' )
 						.replace( '{{input}}', jsdoc[ 0 ] );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': PROMPT
 					});
 					if ( response.data && response.data.choices ) {
@@ -408,8 +422,7 @@ async function main(): Promise<void> {
 				try {
 					const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-ts', 'test_ts.txt' ), 'utf8' )
 						.replace( '{{input}}', ts );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': PROMPT
 					});
 					if ( response.data && response.data.choices ) {
@@ -429,8 +442,7 @@ async function main(): Promise<void> {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'examples_js.txt' ), 'utf8' )
 					.replace( '{{input}}', examplesSection );
 				debug( 'Prompt: '+PROMPT );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
@@ -447,8 +459,7 @@ async function main(): Promise<void> {
 			try {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'test_js.txt' ), 'utf8' )
 					.replace( '{{input}}', usageSection );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
@@ -466,8 +477,7 @@ async function main(): Promise<void> {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'cli.txt' ), 'utf8' )
 					.replace( '{{input}}', cliSection );
 				debug( 'Prompt: '+PROMPT );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': PROMPT
 				});
 				if ( response.data && response.data.choices ) {
@@ -485,8 +495,7 @@ async function main(): Promise<void> {
 				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'etc/cli_opts.json' ] ) {
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'model': 'davinci:ft-carnegie-mellon-university:readme-cli-to-opts-2022-10-04-21-04-27',
 					'prompt': cliSection + '\n|>|\n\n',
 					'stop': [ 'END', '|>|' ]
@@ -501,8 +510,7 @@ async function main(): Promise<void> {
 				const PROMPT = readFileSync( join( PROMPTS_DIR, 'from-readme', 'test_cli_js.txt' ), 'utf8' )
 					.replace( '{{input}}', cliSection );
 				debug( 'Prompt: '+PROMPT );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'max_tokens': OPENAI_SETTINGS.max_tokens * 4,
 					'prompt': PROMPT
 				});
@@ -563,8 +571,7 @@ async function main(): Promise<void> {
 			if ( !has[ 'src/addon.c' ] ) {
 				try {
 					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'addon_c.txt' ), 'utf8' );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': addon.replace( '{{input}}', code )
 					});
 					if ( response.data && response.data.choices ) {
@@ -579,8 +586,7 @@ async function main(): Promise<void> {
 			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.c' ) ) ) {
 				try {
 					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': addon.replace( '{{input}}', code )
 					});
 					if ( response.data && response.data.choices ) {
@@ -595,8 +601,7 @@ async function main(): Promise<void> {
 			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.h' ) ) ) {
 				try {
 					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_h.txt' ), 'utf8' );
-					const response = await openai.createCompletion({
-						...OPENAI_SETTINGS,
+					const response = await generateCompletions({
 						'prompt': addon.replace( '{{input}}', code )
 					});
 					if ( response.data && response.data.choices ) {
@@ -673,8 +678,7 @@ async function main(): Promise<void> {
 			const EXAMPLES_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'examples_js.txt' ), 'utf8' );
 			const prompt = EXAMPLES_JS_FILE.replace( '{{input}}', jsCode[ 1 ] );
 			debug( 'Prompt: '+prompt );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': prompt
 			});
 			if ( response.data && response.data.choices ) {
@@ -686,8 +690,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const README_MD_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'readme_md.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': README_MD_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -699,8 +702,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const BENCHMARK_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': BENCHMARK_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -712,8 +714,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const INDEX_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_js.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': INDEX_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -725,8 +726,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const TEST_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'test_js.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': TEST_JS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -738,8 +738,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const REPL_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'repl_txt.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': REPL_TXT_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -752,8 +751,7 @@ async function main(): Promise<void> {
 		let ts = '';
 		try {
 			const INDEX_D_TS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_d_ts.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': INDEX_D_TS_FILE.replace( '{{input}}', jsCode[ 1 ] )
 			});
 			if ( response.data && response.data.choices ) {
@@ -766,8 +764,7 @@ async function main(): Promise<void> {
 		}
 		try {
 			const TEST_TS_FILE = readFileSync( join( PROMPTS_DIR, 'from-ts', 'test_ts.txt' ), 'utf8' );
-			const response = await openai.createCompletion({
-				...OPENAI_SETTINGS,
+			const response = await generateCompletions({
 				'prompt': TEST_TS_FILE.replace( '{{input}}', ts )
 			});
 			if ( response.data && response.data.choices ) {
@@ -783,8 +780,7 @@ async function main(): Promise<void> {
 			// Case: Package contains a CLI:
 			try {
 				const USAGE_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'usage_txt.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': USAGE_TXT_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ).replace( '{{cli}}', cli )
 				});
 				if ( response.data && response.data.choices ) {
@@ -796,8 +792,7 @@ async function main(): Promise<void> {
 			}
 			try {
 				const CLI_OPTS_JSON_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli_opts_json.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': CLI_OPTS_JSON_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] )
 				});
 				if ( response.data && response.data.choices ) {
@@ -809,8 +804,7 @@ async function main(): Promise<void> {
 			}
 			try {
 				const CLI_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': CLI_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] )
 				});
 				if ( response.data && response.data.choices ) {
@@ -822,9 +816,8 @@ async function main(): Promise<void> {
 			}
 			try {
 				const TEST_CLI_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'test_cli_js.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					'prompt': TEST_CLI_JS_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] ),
-					...OPENAI_SETTINGS
+				const response = await generateCompletions({
+					'prompt': TEST_CLI_JS_FILE.replace( '{{jsdoc}}', jsCode[ 1 ] )
 				});
 				if ( response.data && response.data.choices ) {
 					const txt = LICENSE_TXT + '\n\'use strict\';\n' + ( response?.data?.choices[ 0 ].text || '' );
@@ -881,8 +874,7 @@ async function main(): Promise<void> {
 			const dependencies: Set<string> = new Set();
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'addon_c.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
@@ -895,8 +887,7 @@ async function main(): Promise<void> {
 			}
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
@@ -909,8 +900,7 @@ async function main(): Promise<void> {
 			}
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_h.txt' ), 'utf8' );
-				const response = await openai.createCompletion({
-					...OPENAI_SETTINGS,
+				const response = await generateCompletions({
 					'prompt': addon.replace( '{{input}}', code )
 				});
 				if ( response.data && response.data.choices ) {
