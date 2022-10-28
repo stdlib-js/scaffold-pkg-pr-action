@@ -43,6 +43,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
+const RE_C_EXAMPLES = /### Examples\n\n```c([\s\S]+?)```/;
 const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
@@ -291,6 +292,9 @@ async function main(): Promise<void> {
 		// Hash map of whether the PR contains package files:
 		const has = {
 			'benchmark/benchmark.js': false,
+			'benchmark/benchmark.native.js': false,
+			'benchmark/c/benchmark.c': false,
+			'benchmark/c/Makefile': false,
 			'bin/cli': false,
 			'docs/types/index.d.ts': false,
 			'docs/types/test.ts': false,
@@ -298,6 +302,8 @@ async function main(): Promise<void> {
 			'docs/usage.txt': false,
 			'etc/cli_opts.json': false,
 			'examples/index.js': false,
+			'examples/c/example.c': false,
+			'examples/c/Makefile': false,
 			'lib/index.js': false,
 			'lib/main.js': false,
 			'lib/native.js': false,
@@ -538,6 +544,15 @@ async function main(): Promise<void> {
 				let includeGypi = readFileSync( join( SNIPPETS_DIR, 'include_gypi.txt' ), 'utf8' );
 				includeGypi = includeGypi.replace( '{{year}}', CURRENT_YEAR );
 				writeToDisk( pkgDir, 'include.gypi', includeGypi );	
+			}
+			const cExampleMatch = RE_C_EXAMPLES.exec( cSection );
+			if ( cExampleMatch && cExampleMatch[ 1 ] && !has[ 'examples/c/example.c' ] ) {
+				writeToDisk( join( pkgDir, 'examples', 'c' ), 'example.c', LICENSE_TXT + cExampleMatch[ 1 ] );
+			}
+			if ( cExampleMatch && cExampleMatch[ 1 ] && !has[ 'examples/c/Makefile' ] ) {
+				let makefile = readFileSync( join( SNIPPETS_DIR, 'examples', 'c', 'Makefile' ), 'utf8' );
+				makefile = makefile.replace( '{{year}}', CURRENT_YEAR );
+				writeToDisk( join( pkgDir, 'examples', 'c' ), 'Makefile', makefile );
 			}
 			const main = readFileSync( join( pkgDir, 'lib', 'main.js' ), 'utf8' );
 			info( 'main: '+main );
