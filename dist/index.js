@@ -489,11 +489,10 @@ async function main() {
             if (cliSection) {
                 cli = RE_CLI_ALIAS.exec(cliSection);
                 if (!has['bin/cli']) {
-                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'cli.txt'), 'utf8')
-                        .replace('{{input}}', cliSection);
-                    (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await generateCompletions({
-                        'prompt': PROMPT
+                        'model': 'davinci:ft-carnegie-mellon-university:cli-to-bin-2022-10-28-19-43-34',
+                        'prompt': cliSection + '\n|>|\n\n',
+                        'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
                         const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + (response?.data?.choices[0].text || '');
