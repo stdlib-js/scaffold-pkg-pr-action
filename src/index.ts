@@ -56,7 +56,7 @@ const OPENAI_SETTINGS = {
 	'frequency_penalty': 0,
 	'presence_penalty': 0,
 	'stop': [ 'Input (', 'Output (' ],
-	// 'user': context.actor
+	'user': context.actor
 };
 const OPENAI_API_KEY = getInput( 'OPENAI_API_KEY', { 
 	required: true 

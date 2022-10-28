@@ -79,7 +79,7 @@ const OPENAI_SETTINGS = {
     'frequency_penalty': 0,
     'presence_penalty': 0,
     'stop': ['Input (', 'Output ('],
-    // 'user': context.actor
+    'user': github_1.context.actor
 };
 const OPENAI_API_KEY = (0, core_1.getInput)('OPENAI_API_KEY', {
     required: true
