@@ -134,6 +134,12 @@ const SEE_ALSO = `
 
     See Also
     --------`;
+const BENCHMARK_NATIVE_REQUIRE = `// VARIABLES //
+
+var $1 = tryRequire( resolve( __dirname, './../lib/native.js' ) );
+var opts = {
+	'skip': ( $1 instanceof Error )
+};`;
 // FUNCTIONS //
 function writeToDisk(dir, filename, data) {
     try {
@@ -568,6 +574,41 @@ async function main() {
                     let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'examples', 'c', 'Makefile'), 'utf8');
                     makefile = makefile.replace('{{year}}', CURRENT_YEAR);
                     writeToDisk((0, path_1.join)(pkgDir, 'examples', 'c'), 'Makefile', makefile);
+                }
+                if (!has['benchmark/c/benchmark.c']) {
+                    try {
+                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'benchmark_c.txt'), 'utf8')
+                            .replace('{{input}}', cSection);
+                        const response = await generateCompletions({
+                            'prompt': PROMPT
+                        });
+                        if (response.data && response.data.choices) {
+                            const completion = response?.data?.choices[0].text || '';
+                            const cInclude = /### Usage\n\n```c\n(#include "[^"]+")\n```/.exec(cSection)[1];
+                            const cAlias = /#### (stdlib_[^(]+)\(/.exec(cSection)[1];
+                            let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'benchmark', 'c', 'benchmark.c'), 'utf8');
+                            benchmark = benchmark.replace('{{year}}', CURRENT_YEAR);
+                            benchmark = benchmark.replace('{{completion}}', completion);
+                            benchmark = benchmark.replace('{{include}}', cInclude);
+                            benchmark = benchmark.replace('{{alias}}', cAlias);
+                            writeToDisk((0, path_1.join)(pkgDir, 'benchmark', 'c'), 'benchmark.c', benchmark);
+                        }
+                    }
+                    catch (err) {
+                        (0, core_1.setFailed)(err.message);
+                    }
+                    await sleep(WAIT_TIME);
+                }
+                if (!has['benchmark/c/Makefile']) {
+                    let makefile = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'benchmark', 'c', 'Makefile'), 'utf8');
+                    makefile = makefile.replace('{{year}}', CURRENT_YEAR);
+                    writeToDisk((0, path_1.join)(pkgDir, 'benchmark', 'c'), 'Makefile', makefile);
+                }
+                if (!has['benchmark/benchmark.native.js']) {
+                    let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), 'utf8');
+                    benchmark = benchmark.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, BENCHMARK_NATIVE_REQUIRE);
+                    benchmark = benchmark.replace(/bench\( pkg/, 'bench( pkg+\'::native\'');
+                    writeToDisk((0, path_1.join)(pkgDir, 'benchmark'), 'benchmark.native.js', benchmark);
                 }
                 const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
                 (0, core_1.info)('main: ' + main);

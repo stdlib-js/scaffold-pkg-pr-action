@@ -1,0 +1,139 @@
+Input (README.md):
+## C APIs
+
+### Usage
+
+```c
+#include "stdlib/number/float64/base/exponent.h"
+```
+
+#### stdlib_base_float64_exponent( x )
+
+Returns an integer corresponding to the unbiased exponent of a [double-precision floating-point number][ieee754].
+
+```c
+#include <stdint.h>
+
+int32_t out = stdlib_base_float64_exponent( 3.14 );
+```
+
+The function accepts the following arguments:
+
+-   **x**: `[in] double` input value.
+
+```c
+int32_t stdlib_base_float64_exponent( const double x );
+```
+
+### Examples
+
+```c
+#include "stdlib/number/float64/base/exponent.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <inttypes.h>
+
+int main() {
+    double x[] = { 4.0, 0.0, -0.0, 1.0, -1.0, 3.14, -3.14, 1.0e308, -1.0e308, 1.0/0.0, -1.0/0.0, 0.0/0.0 };
+
+    int32_t out;
+    int i;
+    for ( i = 0; i < 12; i++ ) {
+        out = stdlib_base_float64_exponent( x[ i ] );
+        printf( "%lf => out: %" PRId32 "\n", x[ i ], out );
+    }
+}
+```
+Output (benchmarks/c/benchmark.c):
+double benchmark() {
+    double elapsed;
+    int32_t out;
+    double x;
+    double t;
+    int i;
+
+    t = tic();
+    for ( i = 0; i < ITERATIONS; i++ ) {
+        x = ( rand_double()*1.0e7 ) - 5.0e6;
+        out = stdlib_base_float64_exponent( x );
+        if ( out == 1024 ) {
+            printf( "unexpected result\n" );
+            break;
+        }
+    }
+    elapsed = tic() - t;
+    if ( out == 1024 ) {
+        printf( "unexpected result\n" );
+    }
+    return elapsed;
+}
+Input (README.md):
+## C APIs
+
+### Usage
+
+```c
+#include "stdlib/math/base/special/abs.h"
+```
+
+#### stdlib_base_abs( x )
+
+Computes the absolute value of a double-precision floating-point number.
+
+```c
+double y = stdlib_base_abs( -5.0 );
+// returns 5.0
+```
+
+The function accepts the following arguments:
+
+-   **x**: `[in] double` input value.
+
+```c
+double stdlib_base_abs( const double x );
+```
+
+### Examples
+
+```c
+#include "stdlib/math/base/special/abs.h"
+#include <stdio.h>
+
+int main() {
+    double x[] = { 3.14, -3.14, 0.0, 0.0/0.0 };
+
+    double y;
+    int i;
+    for ( i = 0; i < 4; i++ ) {
+        y = stdlib_base_abs( x[ i ] );
+        printf( "|%lf| = %lf\n", x[ i ], y );
+    }
+}
+```
+Output (benchmarks/c/benchmark.c):
+double benchmark() {
+	double elapsed;
+	double x;
+	double y;
+	double t;
+	int i;
+
+	t = tic();
+	for ( i = 0; i < ITERATIONS; i++ ) {
+		x = ( 1000.0*rand_double() ) - 500.0;
+		y = fabs( x );
+		if ( y != y ) {
+			printf( "should not return NaN\n" );
+			break;
+		}
+	}
+	elapsed = tic() - t;
+	if ( y != y ) {
+		printf( "should not return NaN\n" );
+	}
+	return elapsed;
+}
+Input (README.md):
+{{input}}
+Output (benchmarks/c/benchmark.c):
+{{output}}
