@@ -111,7 +111,10 @@ const SEE_ALSO = `
 
     See Also
     --------`;
-const BENCHMARK_NATIVE_REQUIRE = `// VARIABLES //
+const NATIVE_REQUIRE = `var tryRequire = require( '@stdlib/utils/try-require' );
+
+
+// VARIABLES //
 
 var $1 = tryRequire( resolve( __dirname, './../lib/native.js' ) );
 var opts = {
@@ -313,7 +316,9 @@ async function main(): Promise<void> {
 			'lib/index.js': false,
 			'lib/main.js': false,
 			'lib/native.js': false,
+			'test/fixtures/stdin_error.js.txt': false,
 			'test/test.js': false,
+			'test/test.native.js': false,
 			'test/test.cli.js': false,
 			'binding.gyp': false,
 			'include.gypi': false,
@@ -531,9 +536,11 @@ async function main(): Promise<void> {
 				}
 				await sleep( WAIT_TIME );
 			}
-			let stdinErrorFixture = readFileSync( join( SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt' ), 'utf8' );
-			stdinErrorFixture = stdinErrorFixture.replace( '{{year}}', CURRENT_YEAR );
-			writeToDisk( join( pkgDir, 'test', 'fixtures' ), 'stdin_error.js.txt', stdinErrorFixture );
+			if ( !has[ 'test/fixtures/stdin_error.js.txt' ] ) {
+				let stdinErrorFixture = readFileSync( join( SNIPPETS_DIR, 'test', 'fixtures', 'stdin_error_js_txt.txt' ), 'utf8' );
+				stdinErrorFixture = stdinErrorFixture.replace( '{{year}}', CURRENT_YEAR );
+				writeToDisk( join( pkgDir, 'test', 'fixtures' ), 'stdin_error.js.txt', stdinErrorFixture );
+			}
 		}
 		if ( cSection ) {
 			if ( !has[ 'src/Makefile' ] ) {
@@ -592,9 +599,15 @@ async function main(): Promise<void> {
 			}
 			if ( !has[ 'benchmark/benchmark.native.js' ] ) {
 				let benchmark = readFileSync( join( pkgDir, 'benchmark', 'benchmark.js' ), 'utf8' );
-				benchmark = benchmark.replace( /var ([^=]+) = require\( '.\/..\/lib' \);/, BENCHMARK_NATIVE_REQUIRE );
-				benchmark = benchmark.replace( /bench\( pkg/, 'bench( pkg+\'::native\'' );
+				benchmark = benchmark.replace( /var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE );
+				benchmark = benchmark.replace( /bench\( pkg,/g, 'bench( pkg+\'::native\', opts,' );
 				writeToDisk( join( pkgDir, 'benchmark' ), 'benchmark.native.js', benchmark );
+			}
+			if ( !has[ 'test/test.native.js' ] ) {
+				let test = readFileSync( join( pkgDir, 'test', 'test.js' ), 'utf8' );
+				test = test.replace( /var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE );
+				test = test.replace( /, function test\( t \)/g, ', opts, function test( t )' );
+				writeToDisk( join( pkgDir, 'test' ), 'test.native.js', test );
 			}
 			const main = readFileSync( join( pkgDir, 'lib', 'main.js' ), 'utf8' );
 			info( 'main: '+main );
