@@ -538,16 +538,18 @@ async function main() {
                     await sleep(WAIT_TIME);
                 }
                 if (!has['test/test.cli.js']) {
-                    const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'test_cli_js.txt'), 'utf8')
-                        .replace('{{input}}', cliSection);
-                    (0, core_1.debug)('Prompt: ' + PROMPT);
                     const response = await generateCompletions({
+                        'model': 'davinci:ft-scaffolding:cli-to-test-cli-2022-11-01-15-54-05',
+                        'prompt': cliSection + '\n|>|\n\n',
                         'max_tokens': OPENAI_SETTINGS.max_tokens * 4,
-                        'prompt': PROMPT
+                        'stop': ['END', '|>|']
                     });
                     if (response.data && response.data.choices) {
-                        const txt = LICENSE_TXT + '\n\'use strict\';\n' + (response?.data?.choices[0].text || '');
-                        writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.cli.js', txt);
+                        const completion = response?.data?.choices[0].text || '';
+                        let test = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'test', 'test.cli.js'), 'utf8');
+                        test = test.replace('{{year}}', CURRENT_YEAR);
+                        test = test.replace('{{completion}}', completion);
+                        writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.cli.js', test);
                     }
                     await sleep(WAIT_TIME);
                 }
