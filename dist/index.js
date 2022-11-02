@@ -66,6 +66,7 @@ const RE_JS = /```js([\s\S]+?)```/;
 const RE_CLI_USAGE = /```text(\nUsage:[\s\S]+?)```/;
 const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
+const RE_ALL_JSDOC = /\/\*\*[\s\S]+?\*\//g;
 const RE_C_EXAMPLES = /### Examples\n\n```c([\s\S]+?)```/;
 const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
@@ -248,6 +249,9 @@ function extractDepsFromIncludes(dependencies, code) {
         match = RE_STDLIB_INCLUDES.exec(code);
     }
     return dependencies;
+}
+function removeJSDocComments(code) {
+    return (0, string_replace_1.default)(code, RE_ALL_JSDOC, '');
 }
 // MAIN //
 /**
@@ -449,10 +453,10 @@ async function main() {
                 }
                 if (!has['docs/types/test.ts']) {
                     try {
-                        const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-ts', 'test_ts.txt'), 'utf8')
-                            .replace('{{input}}', ts);
                         const response = await generateCompletions({
-                            'prompt': PROMPT
+                            'model': 'davinci:ft-scaffolding:ts-to-test-ts-2022-11-02-01-05-05',
+                            'prompt': removeJSDocComments(ts) + '\n|>|\n\n',
+                            'stop': ['END', '|>|']
                         });
                         if (response.data && response.data.choices) {
                             let txt = response?.data?.choices[0].text || '';
@@ -852,9 +856,10 @@ async function main() {
                 (0, core_1.setFailed)(err.message);
             }
             try {
-                const TEST_TS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-ts', 'test_ts.txt'), 'utf8');
                 const response = await generateCompletions({
-                    'prompt': TEST_TS_FILE.replace('{{input}}', ts)
+                    'model': 'davinci:ft-scaffolding:ts-to-test-ts-2022-11-02-01-05-05',
+                    'prompt': removeJSDocComments(ts) + '\n|>|\n\n',
+                    'stop': ['END', '|>|']
                 });
                 if (response.data && response.data.choices) {
                     let txt = response?.data?.choices[0].text || '';
