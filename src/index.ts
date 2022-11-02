@@ -494,14 +494,18 @@ async function main(): Promise<void> {
 		if ( cliSection ) {
 			cli = RE_CLI_ALIAS.exec( cliSection );
 			if ( !has[ 'bin/cli' ] ) {
-				const response = await generateCompletions({
-					'model': 'davinci:ft-carnegie-mellon-university:cli-to-bin-2022-10-28-19-43-34',
-					'prompt': cliSection + '\n|>|\n\n',
-					'stop': [ 'END', '|>|' ]
-				});
-				if ( response.data && response.data.choices ) {
-					const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
-					writeToDisk( join( pkgDir, 'bin' ), 'cli', txt );
+				try {
+					const response = await generateCompletions({
+						'model': 'davinci:ft-carnegie-mellon-university:cli-to-bin-2022-10-28-19-43-34',
+						'prompt': cliSection + '\n|>|\n\n',
+						'stop': [ 'END', '|>|' ]
+					});
+					if ( response.data && response.data.choices ) {
+						const txt = '#!/usr/bin/env node\n\n' + LICENSE_TXT + '\n\'use strict\';\n\n' + ( response?.data?.choices[ 0 ].text || '' );
+						writeToDisk( join( pkgDir, 'bin' ), 'cli', txt );
+					}
+				} catch ( err ) {
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
@@ -514,30 +518,38 @@ async function main(): Promise<void> {
 				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'etc/cli_opts.json' ] ) {
-				const response = await generateCompletions({
-					'model': 'davinci:ft-carnegie-mellon-university:readme-cli-to-opts-2022-10-04-21-04-27',
-					'prompt': cliSection + '\n|>|\n\n',
-					'stop': [ 'END', '|>|' ]
-				});
-				if ( response.data && response.data.choices ) {
-					const txt = trim( response?.data?.choices[ 0 ].text || '' ) + '\n';
-					writeToDisk( join( pkgDir, 'etc' ), 'cli_opts.json', txt );
+				try {
+					const response = await generateCompletions({
+						'model': 'davinci:ft-carnegie-mellon-university:readme-cli-to-opts-2022-10-04-21-04-27',
+						'prompt': cliSection + '\n|>|\n\n',
+						'stop': [ 'END', '|>|' ]
+					});
+					if ( response.data && response.data.choices ) {
+						const txt = trim( response?.data?.choices[ 0 ].text || '' ) + '\n';
+						writeToDisk( join( pkgDir, 'etc' ), 'cli_opts.json', txt );
+					}
+				} catch ( err ) {
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
 			if ( !has[ 'test/test.cli.js' ] ) {
-				const response = await generateCompletions({
-					'model': 'davinci:ft-scaffolding:cli-to-test-cli-2022-11-01-15-54-05',
-					'prompt': cliSection + '\n|>|\n\n',
-					'max_tokens': OPENAI_SETTINGS.max_tokens * 4,
-					'stop': [ 'END', '|>|' ]
-				});
-				if ( response.data && response.data.choices ) {
-					const completion = response?.data?.choices[ 0 ].text || '';
-					let test = readFileSync( join( SNIPPETS_DIR, 'test', 'test.cli.js' ), 'utf8' );
-					test = test.replace( '{{year}}', CURRENT_YEAR );
-					test = test.replace( '{{completion}}', completion );
-					writeToDisk( join( pkgDir, 'test' ), 'test.cli.js', test );
+				try {
+					const response = await generateCompletions({
+						'model': 'davinci:ft-scaffolding:cli-to-test-cli-2022-11-01-15-54-05',
+						'prompt': cliSection + '\n|>|\n\n',
+						'max_tokens': 2048,
+						'stop': [ 'END', '|>|' ]
+					});
+					if ( response.data && response.data.choices ) {
+						const completion = response?.data?.choices[ 0 ].text || '';
+						let test = readFileSync( join( SNIPPETS_DIR, 'test', 'test.cli.js' ), 'utf8' );
+						test = test.replace( '{{year}}', CURRENT_YEAR );
+						test = test.replace( '{{completion}}', completion );
+						writeToDisk( join( pkgDir, 'test' ), 'test.cli.js', test );
+					}
+				} catch ( err ) {
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
