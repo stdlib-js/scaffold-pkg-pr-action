@@ -583,7 +583,7 @@ async function main(): Promise<void> {
 					});
 					if ( response.data && response.data.choices ) {
 						const completion = response?.data?.choices[ 0 ].text || '';
-						let test = readFileSync( join( SNIPPETS_DIR, 'test', 'test.cli.js' ), 'utf8' );
+						let test = readFileSync( join( SNIPPETS_DIR, 'test', 'test.cli_js.txt' ), 'utf8' );
 						test = test.replace( '{{year}}', CURRENT_YEAR );
 						test = test.replace( '{{completion}}', completion );
 						writeToDisk( join( pkgDir, 'test' ), 'test.cli.js', test );
