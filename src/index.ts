@@ -20,7 +20,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { debug, getInput, setFailed, setOutput, info } from '@actions/core';
+import { debug, error, getInput, setFailed, setOutput, info } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { Configuration, OpenAIApi } from 'openai';
 import { parse } from 'yaml'
@@ -203,13 +203,14 @@ async function sleep( ms: number ): Promise<void> {
 	return new Promise( resolve => setTimeout( resolve, ms ) );
 }
 
+let counter = 0;
 async function generateCompletions( config ) {
-	let user = `${context.actor}-1`;
+	counter += 1;
 	const run = async () => {
 		const response = await openai.createCompletion({
 			...OPENAI_SETTINGS,
 			...config,
-			'user': user
+			'user': `${context.actor}-${counter}`
 		});
 		if ( response.status === 404 ) {
 			throw new AbortError(response.statusText);
@@ -220,7 +221,6 @@ async function generateCompletions( config ) {
 		retries: 5,
 		onFailedAttempt: ( error ) => {
 			info( `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.` );
-			user = context.actor + '-' + error.attemptNumber;
 		}
 	});	
 }
@@ -363,8 +363,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'docs' ), 'repl.txt', txt );
 				}
 			} catch ( err ) {
-				debug( err );
-				setFailed( err.message );
+				error( err.message );
 			}
 			await sleep( WAIT_TIME );
 		}
@@ -381,8 +380,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'lib' ), 'index.js', txt );
 				}
 			} catch ( err ) {
-				debug( err );
-				setFailed( err.message );
+				error( err.message );
 			}
 			await sleep( WAIT_TIME );
 		}
@@ -402,8 +400,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'lib' ), 'main.js', txt );
 				}
 			} catch ( err ) {
-				debug( err );
-				setFailed( err.message );
+				error( err.message );
 			}
 			await sleep( WAIT_TIME );
 		}
@@ -420,7 +417,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'benchmark' ), 'benchmark.js', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
@@ -438,7 +435,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'docs', 'types' ), 'index.d.ts', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
@@ -455,7 +452,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'docs', 'types' ), 'test.ts', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
@@ -474,8 +471,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'examples' ), 'index.js', txt );
 				}
 			} catch ( err ) {
-				debug( err );
-				setFailed( err.message );
+				error( err.message );
 			}
 			await sleep( WAIT_TIME );
 		}	
@@ -491,7 +487,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'test' ), 'test.js', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			await sleep( WAIT_TIME );
 		}
@@ -597,7 +593,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'benchmark', 'c' ), 'benchmark.c', benchmark );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 				await sleep( WAIT_TIME );
 			}
@@ -658,7 +654,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'src' ), 'addon.c', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 			}
 			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.c' ) ) ) {
@@ -673,7 +669,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 			}
 			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.h' ) ) ) {
@@ -687,7 +683,7 @@ async function main(): Promise<void> {
 						writeToDisk( join( pkgDir, 'include', 'stdlib', pkgPath ), aliasMatch[ 1 ] +'.h', txt );
 					}
 				} catch ( err ) {
-					setFailed( err.message );
+					error( err.message );
 				}
 			}
 			if ( !has[ 'manifest.json' ] ) {
@@ -764,7 +760,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'examples' ), 'index.js', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const README_MD_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'readme_md.txt' ), 'utf8' );
@@ -776,7 +772,7 @@ async function main(): Promise<void> {
 				writeToDisk( pkgDir, 'README.md', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const BENCHMARK_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt' ), 'utf8' );
@@ -788,7 +784,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'benchmark' ), 'benchmark.js', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const INDEX_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'index_js.txt' ), 'utf8' );
@@ -800,7 +796,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'lib' ), 'index.js', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const TEST_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'test_js.txt' ), 'utf8' );
@@ -812,7 +808,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'test' ), 'test.js', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const REPL_TXT_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'repl_txt.txt' ), 'utf8' );
@@ -824,7 +820,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'docs' ), 'repl.txt', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		let ts = '';
 		try {
@@ -838,7 +834,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'docs', 'types' ), 'index.d.ts', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		try {
 			const response = await generateCompletions({
@@ -852,7 +848,7 @@ async function main(): Promise<void> {
 				writeToDisk( join( pkgDir, 'docs', 'types' ), 'test.ts', txt );
 			}
 		} catch ( err ) {
-			setFailed( err.message );
+			error( err.message );
 		}
 		
 		if ( cli ) {
@@ -867,7 +863,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'docs' ), 'usage.txt', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			try {
 				const CLI_OPTS_JSON_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli_opts_json.txt' ), 'utf8' );
@@ -879,7 +875,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'etc' ), 'cli_opts.json', json );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			try {
 				const CLI_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'cli.txt' ), 'utf8' );
@@ -891,7 +887,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'bin' ), 'cli', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			try {
 				const TEST_CLI_JS_FILE = readFileSync( join( PROMPTS_DIR, 'from-jsdoc', 'test_cli_js.txt' ), 'utf8' );
@@ -903,7 +899,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'test' ), 'test.cli.js', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 		}
 		break;
@@ -962,7 +958,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'src' ), 'addon.c', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
@@ -975,7 +971,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			try {
 				const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_h.txt' ), 'utf8' );
@@ -987,7 +983,7 @@ async function main(): Promise<void> {
 					writeToDisk( join( pkgDir, 'include', 'stdlib', pkgPath ), aliasMatch[ 1 ] +'.h', txt );
 				}
 			} catch ( err ) {
-				setFailed( err.message );
+				error( err.message );
 			}
 			let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
 			manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\n,\t\t\t\t' ) );

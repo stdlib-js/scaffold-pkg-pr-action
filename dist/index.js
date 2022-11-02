@@ -220,13 +220,14 @@ function writePackageJSON(dir, pkg, cli) {
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+let counter = 0;
 async function generateCompletions(config) {
-    let user = `${github_1.context.actor}-1`;
+    counter += 1;
     const run = async () => {
         const response = await openai.createCompletion({
             ...OPENAI_SETTINGS,
             ...config,
-            'user': user
+            'user': `${github_1.context.actor}-${counter}`
         });
         if (response.status === 404) {
             throw new p_retry_1.AbortError(response.statusText);
@@ -237,7 +238,6 @@ async function generateCompletions(config) {
         retries: 5,
         onFailedAttempt: (error) => {
             (0, core_1.info)(`Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`);
-            user = github_1.context.actor + '-' + error.attemptNumber;
         }
     });
 }
@@ -370,8 +370,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.debug)(err);
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 await sleep(WAIT_TIME);
             }
@@ -389,8 +388,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.debug)(err);
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 await sleep(WAIT_TIME);
             }
@@ -411,8 +409,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.debug)(err);
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 await sleep(WAIT_TIME);
             }
@@ -430,7 +427,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -449,7 +446,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -467,7 +464,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -487,8 +484,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.debug)(err);
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 await sleep(WAIT_TIME);
             }
@@ -505,7 +501,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 await sleep(WAIT_TIME);
             }
@@ -610,7 +606,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                     await sleep(WAIT_TIME);
                 }
@@ -669,7 +665,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                 }
                 if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.c'))) {
@@ -685,7 +681,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                 }
                 if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.h'))) {
@@ -700,7 +696,7 @@ async function main() {
                         }
                     }
                     catch (err) {
-                        (0, core_1.setFailed)(err.message);
+                        (0, core_1.error)(err.message);
                     }
                 }
                 if (!has['manifest.json']) {
@@ -775,7 +771,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const README_MD_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'readme_md.txt'), 'utf8');
@@ -788,7 +784,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const BENCHMARK_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'benchmark_js.txt'), 'utf8');
@@ -801,7 +797,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const INDEX_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'index_js.txt'), 'utf8');
@@ -814,7 +810,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const TEST_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_js.txt'), 'utf8');
@@ -827,7 +823,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const REPL_TXT_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'repl_txt.txt'), 'utf8');
@@ -840,7 +836,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             let ts = '';
             try {
@@ -855,7 +851,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             try {
                 const response = await generateCompletions({
@@ -870,7 +866,7 @@ async function main() {
                 }
             }
             catch (err) {
-                (0, core_1.setFailed)(err.message);
+                (0, core_1.error)(err.message);
             }
             if (cli) {
                 // Case: Package contains a CLI:
@@ -885,7 +881,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 try {
                     const CLI_OPTS_JSON_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'cli_opts_json.txt'), 'utf8');
@@ -898,7 +894,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 try {
                     const CLI_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'cli.txt'), 'utf8');
@@ -911,7 +907,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 try {
                     const TEST_CLI_JS_FILE = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-jsdoc', 'test_cli_js.txt'), 'utf8');
@@ -924,7 +920,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
             }
             break;
@@ -976,7 +972,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 try {
                     const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_c.txt'), 'utf8');
@@ -990,7 +986,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 try {
                     const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_h.txt'), 'utf8');
@@ -1003,7 +999,7 @@ async function main() {
                     }
                 }
                 catch (err) {
-                    (0, core_1.setFailed)(err.message);
+                    (0, core_1.error)(err.message);
                 }
                 let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
                 manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n,\t\t\t\t'));
