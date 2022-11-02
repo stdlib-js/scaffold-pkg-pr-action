@@ -57,8 +57,7 @@ const OPENAI_SETTINGS = {
 	'top_p': 1,
 	'frequency_penalty': 0,
 	'presence_penalty': 0,
-	'stop': [ 'Input (', 'Output (' ],
-	'user': context.actor
+	'stop': [ 'Input (', 'Output (' ]
 };
 const OPENAI_API_KEY = getInput( 'OPENAI_API_KEY', { 
 	required: true 
@@ -205,10 +204,12 @@ async function sleep( ms: number ): Promise<void> {
 }
 
 async function generateCompletions( config ) {
+	let user = `${context.actor}-1`;
 	const run = async () => {
 		const response = await openai.createCompletion({
 			...OPENAI_SETTINGS,
-			...config 
+			...config,
+			'user': user
 		});
 		if ( response.status === 404 ) {
 			throw new AbortError(response.statusText);
@@ -219,6 +220,7 @@ async function generateCompletions( config ) {
 		retries: 5,
 		onFailedAttempt: ( error ) => {
 			info( `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.` );
+			user = context.actor + '-' + error.attemptNumber;
 		}
 	});	
 }
