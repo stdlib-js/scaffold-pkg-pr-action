@@ -144,6 +144,13 @@ var opts = {
 	'skip': ( $1 instanceof Error )
 };`;
 // FUNCTIONS //
+/**
+* Writes a file to the file system.
+*
+* @param dir - directory path
+* @param filename - filename
+* @param data - file data
+*/
 function writeToDisk(dir, filename, data) {
     try {
         (0, fs_1.mkdirSync)(dir);
@@ -157,6 +164,13 @@ function writeToDisk(dir, filename, data) {
     }
     (0, fs_1.writeFileSync)((0, path_1.join)(dir, filename), data);
 }
+/**
+* Writes `package.json` file.
+*
+* @param dir - directory path
+* @param pkg - package name after `@stdlib` scope (e.g., `math/base/special/sin`)
+* @param cli - cli name if available
+*/
 function writePackageJSON(dir, pkg, cli) {
     const pkgJSON = {
         'name': `@stdlib/${pkg}`,
@@ -217,10 +231,22 @@ function writePackageJSON(dir, pkg, cli) {
     };
     (0, fs_1.writeFileSync)((0, path_1.join)(dir, 'package.json'), JSON.stringify(pkgJSON, null, 2) + '\n');
 }
+/**
+* Sleeps for a specified number of milliseconds.
+*
+* @param ms - number of milliseconds
+* @returns promise which resolves after a specified number of milliseconds
+*/
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 let counter = 0;
+/**
+* Generates completions via OpenAI's API.
+*
+* @param config - OpenAI API completion request configuration
+* @returns promise which resolves to an Axios response with an array of completions
+*/
 async function generateCompletions(config) {
     counter += 1;
     const run = async () => {
@@ -237,10 +263,17 @@ async function generateCompletions(config) {
     return (0, p_retry_1.default)(run, {
         retries: 5,
         onFailedAttempt: (error) => {
-            (0, core_1.info)(`Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`);
+            (0, core_1.info)(`Attempt ${error.attemptNumber} to generate completions via model ${config.model} failed. There are ${error.retriesLeft} retries left.`);
         }
     });
 }
+/**
+* Extracts dependencies from C `#include` statements.
+*
+* @param dependencies - set of dependencies
+* @param code - code to be analyzed
+* @returns updated set of dependencies
+*/
 function extractDepsFromIncludes(dependencies, code) {
     // Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
     const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/g;
@@ -252,6 +285,12 @@ function extractDepsFromIncludes(dependencies, code) {
     }
     return dependencies;
 }
+/**
+* Removes JSDoc comments from a code string.
+*
+* @param code - code string
+* @returns code string with all JSDoc comments removed
+*/
 function removeJSDocComments(code) {
     return (0, string_replace_1.default)(code, RE_ALL_JSDOC, '');
 }
@@ -554,7 +593,6 @@ async function main() {
                         const response = await generateCompletions({
                             'model': 'davinci:ft-scaffolding:cli-to-test-cli-2022-11-01-15-54-05',
                             'prompt': cliSection + '\n|>|\n\n',
-                            'max_tokens': 2048,
                             'stop': ['END', '|>|']
                         });
                         if (response.data && response.data.choices) {

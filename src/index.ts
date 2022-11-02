@@ -25,6 +25,7 @@ import { context, getOctokit } from '@actions/github';
 import { Configuration, OpenAIApi } from 'openai';
 import { parse } from 'yaml'
 import pRetry, { AbortError } from 'p-retry';
+import { AxiosResponse } from 'axios';
 import hasOwnProp from '@stdlib/assert-has-own-property';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
@@ -124,6 +125,13 @@ var opts = {
 
 // FUNCTIONS //
 
+/**
+* Writes a file to the file system. 
+*
+* @param dir - directory path
+* @param filename - filename
+* @param data - file data
+*/
 function writeToDisk( dir: string, filename: string, data: string ): void {
 	try {
 		mkdirSync( dir );
@@ -138,6 +146,13 @@ function writeToDisk( dir: string, filename: string, data: string ): void {
 	writeFileSync( join( dir, filename ), data );
 }
 
+/**
+* Writes `package.json` file.
+* 
+* @param dir - directory path
+* @param pkg - package name after `@stdlib` scope (e.g., `math/base/special/sin`)
+* @param cli - cli name if available
+*/
 function writePackageJSON( dir: string, pkg: string, cli?: string ): void {
 	const pkgJSON = {
 		'name': `@stdlib/${pkg}`,
@@ -199,12 +214,25 @@ function writePackageJSON( dir: string, pkg: string, cli?: string ): void {
 	writeFileSync( join( dir, 'package.json' ), JSON.stringify( pkgJSON, null, 2 )+'\n' );
 }
 
+/**
+* Sleeps for a specified number of milliseconds.
+* 
+* @param ms - number of milliseconds
+* @returns promise which resolves after a specified number of milliseconds
+*/
 async function sleep( ms: number ): Promise<void> {
 	return new Promise( resolve => setTimeout( resolve, ms ) );
 }
 
 let counter = 0;
-async function generateCompletions( config ) {
+
+/**
+* Generates completions via OpenAI's API.
+* 
+* @param config - OpenAI API completion request configuration
+* @returns promise which resolves to an Axios response with an array of completions
+*/
+async function generateCompletions( config ): Promise<AxiosResponse> {
 	counter += 1;
 	const run = async () => {
 		const response = await openai.createCompletion({
@@ -220,11 +248,18 @@ async function generateCompletions( config ) {
 	return pRetry( run, {
 		retries: 5,
 		onFailedAttempt: ( error ) => {
-			info( `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.` );
+			info( `Attempt ${error.attemptNumber} to generate completions via model ${config.model} failed. There are ${error.retriesLeft} retries left.` );
 		}
 	});	
 }
 
+/**
+* Extracts dependencies from C `#include` statements. 
+*
+* @param dependencies - set of dependencies
+* @param code - code to be analyzed
+* @returns updated set of dependencies
+*/
 function extractDepsFromIncludes( dependencies: Set<string>, code: string ): Set<string> {
 	// Find all `#include "stdlib/...` statements and add them to the `dependencies` set:
 	const RE_STDLIB_INCLUDES = /#include "stdlib\/([^"]+)\.h"/g;
@@ -237,6 +272,12 @@ function extractDepsFromIncludes( dependencies: Set<string>, code: string ): Set
 	return dependencies;
 }
 
+/**
+* Removes JSDoc comments from a code string.
+* 
+* @param code - code string
+* @returns code string with all JSDoc comments removed
+*/
 function removeJSDocComments( code: string ): string {
 	return replace( code, RE_ALL_JSDOC, '' );
 }
@@ -538,7 +579,6 @@ async function main(): Promise<void> {
 					const response = await generateCompletions({
 						'model': 'davinci:ft-scaffolding:cli-to-test-cli-2022-11-01-15-54-05',
 						'prompt': cliSection + '\n|>|\n\n',
-						'max_tokens': 2048,
 						'stop': [ 'END', '|>|' ]
 					});
 					if ( response.data && response.data.choices ) {
