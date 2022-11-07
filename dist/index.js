@@ -689,7 +689,10 @@ async function main() {
                 if (!has['lib/native.js']) {
                     let native = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'lib', 'native_js.txt'), 'utf8');
                     native = native.replace('{{year}}', CURRENT_YEAR);
-                    native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdocMatch[1]);
+                    let jsdoc = jsdocMatch[1];
+                    // Add a `@private` to the JSDoc comment before the first annotation:
+                    jsdoc = jsdoc.replace(/(\* @)/g, '* @private\n$1');
+                    native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdoc);
                     native = (0, string_replace_1.default)(native, '{{alias}}', aliasMatch[1]);
                     const reParams = new RegExp('function ' + aliasMatch[1] + '\\(([^)]+)\\)', 'm');
                     const paramsMatch = main.match(reParams);
