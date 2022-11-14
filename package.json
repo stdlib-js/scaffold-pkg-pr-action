@@ -17,6 +17,7 @@
         "@actions/core": "^1.10.0",
         "@actions/github": "^5.1.1",
         "@stdlib/assert-contains": "^0.0.7",
+        "@stdlib/string-constantcase": "^0.0.4",
         "@stdlib/string-replace": "^0.0.11",
         "@stdlib/string-substring-after": "^0.0.2",
         "@stdlib/string-trim": "^0.0.9",
