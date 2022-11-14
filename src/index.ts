@@ -29,6 +29,7 @@ import { AxiosResponse } from 'axios';
 import hasOwnProp from '@stdlib/assert-has-own-property';
 import currentYear from '@stdlib/time-current-year';
 import substringAfter from '@stdlib/string-substring-after';
+import constantCase from '@stdlib/string-constantcase';
 import trim from '@stdlib/string-trim';
 import replace from '@stdlib/string-replace';
 import extractExamplesSection from './extract_examples_section';
@@ -46,6 +47,8 @@ const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
 const RE_ALL_JSDOC = /\/\*\*[\s\S]+?\*\//g;
 const RE_C_EXAMPLES = /### Examples\n\n```c([\s\S]+?)```/;
+const RE_C_SIGNATURE = /-[^\n]+\n\n```c\n([^\n]+?)\n```/;
+const RE_C_DESCRIPTION = /#### stdlib[^\n]+\n\n([^\n]+?\.)\n/;	
 const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
 const PROMPTS_DIR = join( __dirname, '..', 'prompts' );
 const SNIPPETS_DIR = join( __dirname, '..', 'snippets' );
@@ -372,6 +375,7 @@ async function main(): Promise<void> {
 			'include.gypi': false,
 			'src/Makefile': false,
 			'src/addon.c': false,
+			'src/main.c': false,
 			'package.json': false
 		};
 		for ( const key in has ) {
@@ -713,7 +717,7 @@ async function main(): Promise<void> {
 					error( err.message );
 				}
 			}
-			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.c' ) ) ) {
+			if ( !has[ 'src/main.c' ] ) {
 				try {
 					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
 					const response = await generateCompletions({
@@ -722,30 +726,37 @@ async function main(): Promise<void> {
 					if ( response.data && response.data.choices ) {
 						const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
 						extractDepsFromIncludes( dependencies, txt );
-						writeToDisk( join( pkgDir, 'src' ), aliasMatch[ 1 ] +'.c', txt );
+						writeToDisk( join( pkgDir, 'src' ), 'main.c', txt );
 					}
 				} catch ( err ) {
 					error( err.message );
 				}
 			}
-			if ( !existsSync( join( pkgDir, 'src', aliasMatch[ 1 ], '.h' ) ) ) {
-				try {
-					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_h.txt' ), 'utf8' );
-					const response = await generateCompletions({
-						'prompt': addon.replace( '{{input}}', code )
-					});
-					if ( response.data && response.data.choices ) {
-						const txt = LICENSE_TXT + ( response?.data?.choices[ 0 ].text || '' );
-						writeToDisk( join( pkgDir, 'include', 'stdlib', pkgPath ), aliasMatch[ 1 ] +'.h', txt );
-					}
-				} catch ( err ) {
-					error( err.message );
+			if ( !existsSync( join( includePath, aliasMatch[ 1 ], '.h' ) ) ) {
+				let header =  readFileSync( join( SNIPPETS_DIR, 'include', 'alias_h.txt' ), 'utf8' );
+				header = replace( header, '{{year}}', CURRENT_YEAR );
+				header = replace( header, '{{pkgPath}}', constantCase( pkgPath ) );
+				let match = RE_C_SIGNATURE.exec( main );
+				let signature: string;
+				if ( match ) {
+					signature = match[ 1 ];
+				} else {
+					signature = 'TODO: add signature';
 				}
+				match = RE_C_DESCRIPTION.exec( main );
+				let description: string;
+				if ( match ) {
+					description = match[ 1 ];
+				} else {
+					description = 'TODO: add description';
+				}
+				header = replace( header, '{{description}}', description );
+				header = replace( header, '{{signature}}', signature );
+				writeToDisk( includePath, aliasMatch[ 1 ]+'.h', header );
 			}
 			if ( !has[ 'manifest.json' ] ) {
 				let manifest =  readFileSync( join( SNIPPETS_DIR, 'manifest_json.txt' ), 'utf8' );
-				manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( '\n,\t\t\t\t' ) );
-				manifest = replace( manifest, '{{src}}', '"./src/'+aliasMatch[ 1 ]+'.c"' );
+				manifest = replace( manifest, '{{dependencies}}',  Array.from( dependencies ).join( ',\n\t\t\t\t' ) );
 				writeToDisk( pkgDir, 'manifest.json', manifest );
 			}
 		}

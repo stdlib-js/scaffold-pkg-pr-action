@@ -54,6 +54,7 @@ const p_retry_1 = __importStar(require("p-retry"));
 const assert_has_own_property_1 = __importDefault(require("@stdlib/assert-has-own-property"));
 const time_current_year_1 = __importDefault(require("@stdlib/time-current-year"));
 const string_substring_after_1 = __importDefault(require("@stdlib/string-substring-after"));
+const string_constantcase_1 = __importDefault(require("@stdlib/string-constantcase"));
 const string_trim_1 = __importDefault(require("@stdlib/string-trim"));
 const string_replace_1 = __importDefault(require("@stdlib/string-replace"));
 const extract_examples_section_1 = __importDefault(require("./extract_examples_section"));
@@ -68,6 +69,8 @@ const RE_CLI_ALIAS = /Usage: ([a-z-]+) \[options\]/;
 const RE_JSDOC = /\/\*\*[\s\S]+?\*\//;
 const RE_ALL_JSDOC = /\/\*\*[\s\S]+?\*\//g;
 const RE_C_EXAMPLES = /### Examples\n\n```c([\s\S]+?)```/;
+const RE_C_SIGNATURE = /-[^\n]+\n\n```c\n([^\n]+?)\n```/;
+const RE_C_DESCRIPTION = /#### stdlib[^\n]+\n\n([^\n]+?\.)\n/;
 const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const SNIPPETS_DIR = (0, path_1.join)(__dirname, '..', 'snippets');
@@ -377,6 +380,7 @@ async function main() {
                 'include.gypi': false,
                 'src/Makefile': false,
                 'src/addon.c': false,
+                'src/main.c': false,
                 'package.json': false
             };
             for (const key in has) {
@@ -724,7 +728,7 @@ async function main() {
                         (0, core_1.error)(err.message);
                     }
                 }
-                if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.c'))) {
+                if (!has['src/main.c']) {
                     try {
                         const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_c.txt'), 'utf8');
                         const response = await generateCompletions({
@@ -733,32 +737,40 @@ async function main() {
                         if (response.data && response.data.choices) {
                             const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
                             extractDepsFromIncludes(dependencies, txt);
-                            writeToDisk((0, path_1.join)(pkgDir, 'src'), aliasMatch[1] + '.c', txt);
+                            writeToDisk((0, path_1.join)(pkgDir, 'src'), 'main.c', txt);
                         }
                     }
                     catch (err) {
                         (0, core_1.error)(err.message);
                     }
                 }
-                if (!(0, fs_1.existsSync)((0, path_1.join)(pkgDir, 'src', aliasMatch[1], '.h'))) {
-                    try {
-                        const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_h.txt'), 'utf8');
-                        const response = await generateCompletions({
-                            'prompt': addon.replace('{{input}}', code)
-                        });
-                        if (response.data && response.data.choices) {
-                            const txt = LICENSE_TXT + (response?.data?.choices[0].text || '');
-                            writeToDisk((0, path_1.join)(pkgDir, 'include', 'stdlib', pkgPath), aliasMatch[1] + '.h', txt);
-                        }
+                if (!(0, fs_1.existsSync)((0, path_1.join)(includePath, aliasMatch[1], '.h'))) {
+                    let header = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include', 'alias_h.txt'), 'utf8');
+                    header = (0, string_replace_1.default)(header, '{{year}}', CURRENT_YEAR);
+                    header = (0, string_replace_1.default)(header, '{{pkgPath}}', (0, string_constantcase_1.default)(pkgPath));
+                    let match = RE_C_SIGNATURE.exec(main);
+                    let signature;
+                    if (match) {
+                        signature = match[1];
                     }
-                    catch (err) {
-                        (0, core_1.error)(err.message);
+                    else {
+                        signature = 'TODO: add signature';
                     }
+                    match = RE_C_DESCRIPTION.exec(main);
+                    let description;
+                    if (match) {
+                        description = match[1];
+                    }
+                    else {
+                        description = 'TODO: add description';
+                    }
+                    header = (0, string_replace_1.default)(header, '{{description}}', description);
+                    header = (0, string_replace_1.default)(header, '{{signature}}', signature);
+                    writeToDisk(includePath, aliasMatch[1] + '.h', header);
                 }
                 if (!has['manifest.json']) {
                     let manifest = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'manifest_json.txt'), 'utf8');
-                    manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join('\n,\t\t\t\t'));
-                    manifest = (0, string_replace_1.default)(manifest, '{{src}}', '"./src/' + aliasMatch[1] + '.c"');
+                    manifest = (0, string_replace_1.default)(manifest, '{{dependencies}}', Array.from(dependencies).join(',\n\t\t\t\t'));
                     writeToDisk(pkgDir, 'manifest.json', manifest);
                 }
             }
