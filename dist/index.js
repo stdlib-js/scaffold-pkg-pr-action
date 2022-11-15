@@ -677,7 +677,7 @@ async function main() {
                 if (!has['benchmark/benchmark.native.js']) {
                     let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), 'utf8');
                     benchmark = benchmark.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
-                    benchmark = benchmark.replace(/(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;');
+                    benchmark = benchmark.replace(/(\/\/ MODULES \/\/\n\n)/, '$1\nvar resolve = require( \'path\' ).resolve;');
                     benchmark = benchmark.replace(/bench\( pkg,/g, 'bench( pkg+\'::native\', opts,');
                     benchmark = benchmark.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
                     writeToDisk((0, path_1.join)(pkgDir, 'benchmark'), 'benchmark.native.js', benchmark);
@@ -685,7 +685,7 @@ async function main() {
                 if (!has['test/test.native.js']) {
                     let test = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), 'utf8');
                     test = test.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
-                    test = test.replace(/(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;');
+                    test = test.replace(/(\/\/ MODULES \/\/\n\n)/, '$1\nvar resolve = require( \'path\' ).resolve;');
                     test = test.replace(/, function test\( t \)/g, ', opts, function test( t )');
                     test = test.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
                     writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.native.js', test);
@@ -775,7 +775,7 @@ async function main() {
                     if (match) {
                         description = match[1];
                         // Remove Markdown links:
-                        description = description.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+                        description = description.replace(/\[([^\]]+)\]\[[^]+\]/g, '$1');
                     }
                     else {
                         description = 'TODO: add description';
