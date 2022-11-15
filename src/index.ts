@@ -121,9 +121,9 @@ $1
 
 // VARIABLES //
 
-var $1 = tryRequire( resolve( __dirname, './../lib/native.js' ) );
+var $2 = tryRequire( resolve( __dirname, './../lib/native.js' ) );
 var opts = {
-	'skip': ( $1 instanceof Error )
+	'skip': ( $2 instanceof Error )
 };`;
 
 
