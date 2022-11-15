@@ -661,6 +661,7 @@ async function main(): Promise<void> {
 			if ( !has[ 'benchmark/benchmark.native.js' ] ) {
 				let benchmark = readFileSync( join( pkgDir, 'benchmark', 'benchmark.js' ), 'utf8' );
 				benchmark = benchmark.replace( /var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE );
+				benchmark = benchmark.replace( /(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;' ); 
 				benchmark = benchmark.replace( /bench\( pkg,/g, 'bench( pkg+\'::native\', opts,' );
 				benchmark = benchmark.replace( /(Copyright \(c\) )\d{4}/, '$1'+CURRENT_YEAR );
 				writeToDisk( join( pkgDir, 'benchmark' ), 'benchmark.native.js', benchmark );
@@ -668,6 +669,7 @@ async function main(): Promise<void> {
 			if ( !has[ 'test/test.native.js' ] ) {
 				let test = readFileSync( join( pkgDir, 'test', 'test.js' ), 'utf8' );
 				test = test.replace( /var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE );
+				test = test.replace( /(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;' ); 
 				test = test.replace( /, function test\( t \)/g, ', opts, function test( t )' );
 				test = test.replace( /(Copyright \(c\) )\d{4}/, '$1'+CURRENT_YEAR );
 				writeToDisk( join( pkgDir, 'test' ), 'test.native.js', test );
