@@ -730,6 +730,10 @@ async function main() {
                         (0, core_1.error)(err.message);
                     }
                 }
+                else {
+                    const addon = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'src', 'addon.c'), 'utf8');
+                    extractDepsFromIncludes(dependencies, addon);
+                }
                 if (!has['src/main.c']) {
                     try {
                         const addon = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'js-to-c', 'main_c.txt'), 'utf8');
@@ -746,11 +750,15 @@ async function main() {
                         (0, core_1.error)(err.message);
                     }
                 }
+                else {
+                    const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'src', 'main.c'), 'utf8');
+                    extractDepsFromIncludes(dependencies, main);
+                }
                 if (!(0, fs_1.existsSync)((0, path_1.join)(includePath, aliasMatch[1], '.h'))) {
                     let header = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include', 'alias_h.txt'), 'utf8');
                     header = (0, string_replace_1.default)(header, '{{year}}', CURRENT_YEAR);
                     header = (0, string_replace_1.default)(header, '{{pkgPath}}', (0, string_constantcase_1.default)(pkgPath));
-                    let match = RE_C_SIGNATURE.exec(header);
+                    let match = RE_C_SIGNATURE.exec(cSection);
                     let signature;
                     if (match) {
                         signature = match[1];
@@ -758,7 +766,7 @@ async function main() {
                     else {
                         signature = 'TODO: add signature';
                     }
-                    match = RE_C_DESCRIPTION.exec(header);
+                    match = RE_C_DESCRIPTION.exec(cSection);
                     let description;
                     if (match) {
                         description = match[1];

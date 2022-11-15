@@ -719,6 +719,10 @@ async function main(): Promise<void> {
 					error( err.message );
 				}
 			}
+			else {
+				const addon = readFileSync( join( pkgDir, 'src', 'addon.c' ), 'utf8' );
+				extractDepsFromIncludes( dependencies, addon );
+			}
 			if ( !has[ 'src/main.c' ] ) {
 				try {
 					const addon = readFileSync( join( PROMPTS_DIR, 'js-to-c', 'main_c.txt' ), 'utf8' );
@@ -734,18 +738,22 @@ async function main(): Promise<void> {
 					error( err.message );
 				}
 			}
+			else {
+				const main = readFileSync( join( pkgDir, 'src', 'main.c' ), 'utf8' );
+				extractDepsFromIncludes( dependencies, main );
+			}
 			if ( !existsSync( join( includePath, aliasMatch[ 1 ], '.h' ) ) ) {
 				let header =  readFileSync( join( SNIPPETS_DIR, 'include', 'alias_h.txt' ), 'utf8' );
 				header = replace( header, '{{year}}', CURRENT_YEAR );
 				header = replace( header, '{{pkgPath}}', constantCase( pkgPath ) );
-				let match = RE_C_SIGNATURE.exec( header );
+				let match = RE_C_SIGNATURE.exec( cSection );
 				let signature: string;
 				if ( match ) {
 					signature = match[ 1 ];
 				} else {
 					signature = 'TODO: add signature';
 				}
-				match = RE_C_DESCRIPTION.exec( header );
+				match = RE_C_DESCRIPTION.exec( cSection );
 				let description: string;
 				if ( match ) {
 					description = match[ 1 ];
