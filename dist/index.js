@@ -676,12 +676,14 @@ async function main() {
                     let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), 'utf8');
                     benchmark = benchmark.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
                     benchmark = benchmark.replace(/bench\( pkg,/g, 'bench( pkg+\'::native\', opts,');
+                    benchmark = benchmark.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
                     writeToDisk((0, path_1.join)(pkgDir, 'benchmark'), 'benchmark.native.js', benchmark);
                 }
                 if (!has['test/test.native.js']) {
                     let test = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), 'utf8');
                     test = test.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
                     test = test.replace(/, function test\( t \)/g, ', opts, function test( t )');
+                    test = test.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
                     writeToDisk((0, path_1.join)(pkgDir, 'test'), 'test.native.js', test);
                 }
                 const main = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'lib', 'main.js'), 'utf8');
@@ -695,7 +697,7 @@ async function main() {
                     native = native.replace('{{year}}', CURRENT_YEAR);
                     let jsdoc = jsdocMatch[1];
                     // Add a `@private` to the JSDoc comment before the first annotation:
-                    jsdoc = jsdoc.replace(/(\* @)/g, '* @private\n$1');
+                    jsdoc = jsdoc.replace(/(\* @)/, '* @private\n$1');
                     native = (0, string_replace_1.default)(native, '{{jsdoc}}', jsdoc);
                     native = (0, string_replace_1.default)(native, '{{alias}}', aliasMatch[1]);
                     const reParams = new RegExp('function ' + aliasMatch[1] + '\\(([^)]+)\\)', 'm');
@@ -748,7 +750,7 @@ async function main() {
                     let header = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'include', 'alias_h.txt'), 'utf8');
                     header = (0, string_replace_1.default)(header, '{{year}}', CURRENT_YEAR);
                     header = (0, string_replace_1.default)(header, '{{pkgPath}}', (0, string_constantcase_1.default)(pkgPath));
-                    let match = RE_C_SIGNATURE.exec(main);
+                    let match = RE_C_SIGNATURE.exec(header);
                     let signature;
                     if (match) {
                         signature = match[1];
@@ -756,7 +758,7 @@ async function main() {
                     else {
                         signature = 'TODO: add signature';
                     }
-                    match = RE_C_DESCRIPTION.exec(main);
+                    match = RE_C_DESCRIPTION.exec(header);
                     let description;
                     if (match) {
                         description = match[1];
