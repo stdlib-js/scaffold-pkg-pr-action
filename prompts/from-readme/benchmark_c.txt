@@ -136,4 +136,3 @@ double benchmark() {
 Input (README.md):
 {{input}}
 Output (benchmarks/c/benchmark.c):
-{{output}}
