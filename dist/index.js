@@ -72,6 +72,7 @@ const RE_C_EXAMPLES = /### Examples\n\n```c([\s\S]+?)```/;
 const RE_C_SIGNATURE = /-[^\n]+\n\n```c\n([^\n]+?)\n```/;
 const RE_C_DESCRIPTION = /#### stdlib[^\n]+\n\n([^\n]+?\.)\n/;
 const RE_MAIN_JSDOC = /(?:\/\/ MAIN \/\/|'use strict';)\r?\n\r?\n(\/\*\*[\s\S]*?\*\/)[\s\S]*?module\.exports = (.*?);\s*$/;
+const RE_PKG_REQUIRE = /(var pkg = require\( '.\/..\/package.json' \).name;\n)?var ([^=]+) = require\( '.\/..\/lib' \);/;
 const PROMPTS_DIR = (0, path_1.join)(__dirname, '..', 'prompts');
 const SNIPPETS_DIR = (0, path_1.join)(__dirname, '..', 'snippets');
 const WAIT_TIME = 10000; // 10 seconds
@@ -138,7 +139,7 @@ const SEE_ALSO = `
     See Also
     --------`;
 const NATIVE_REQUIRE = `var tryRequire = require( '@stdlib/utils/try-require' );
-
+$1
 
 // VARIABLES //
 
@@ -658,7 +659,7 @@ async function main() {
                             const cAlias = /#### (stdlib_[^(]+)\(/.exec(cSection)[1];
                             let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(SNIPPETS_DIR, 'benchmark', 'c', 'benchmark.c'), 'utf8');
                             benchmark = benchmark.replace('{{year}}', CURRENT_YEAR);
-                            benchmark = benchmark.replace('{{completion}}', completion);
+                            benchmark = benchmark.replace('{{completion}}', (0, string_trim_1.default)(completion));
                             benchmark = benchmark.replace('{{include}}', cInclude);
                             benchmark = benchmark.replace('{{alias}}', cAlias);
                             writeToDisk((0, path_1.join)(pkgDir, 'benchmark', 'c'), 'benchmark.c', benchmark);
@@ -676,7 +677,7 @@ async function main() {
                 }
                 if (!has['benchmark/benchmark.native.js']) {
                     let benchmark = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'benchmark', 'benchmark.js'), 'utf8');
-                    benchmark = benchmark.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
+                    benchmark = benchmark.replace(RE_PKG_REQUIRE, NATIVE_REQUIRE);
                     benchmark = benchmark.replace(/(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;\n');
                     benchmark = benchmark.replace(/bench\( pkg,/g, 'bench( pkg+\'::native\', opts,');
                     benchmark = benchmark.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
@@ -684,7 +685,7 @@ async function main() {
                 }
                 if (!has['test/test.native.js']) {
                     let test = (0, fs_1.readFileSync)((0, path_1.join)(pkgDir, 'test', 'test.js'), 'utf8');
-                    test = test.replace(/var ([^=]+) = require\( '.\/..\/lib' \);/, NATIVE_REQUIRE);
+                    test = test.replace(RE_PKG_REQUIRE, NATIVE_REQUIRE);
                     test = test.replace(/(\/\/ MODULES \/\/\n\n)/, '$1var resolve = require( \'path\' ).resolve;\n');
                     test = test.replace(/, function test\( t \)/g, ', opts, function test( t )');
                     test = test.replace(/(Copyright \(c\) )\d{4}/, '$1' + CURRENT_YEAR);
