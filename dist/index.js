@@ -647,6 +647,8 @@ async function main() {
                     try {
                         const PROMPT = (0, fs_1.readFileSync)((0, path_1.join)(PROMPTS_DIR, 'from-readme', 'benchmark_c.txt'), 'utf8')
                             .replace('{{input}}', cSection);
+                        (0, core_1.info)('Generating `benchmark.c`...');
+                        (0, core_1.info)(PROMPT);
                         const response = await generateCompletions({
                             'prompt': PROMPT
                         });
@@ -772,6 +774,8 @@ async function main() {
                     let description;
                     if (match) {
                         description = match[1];
+                        // Remove Markdown links:
+                        description = description.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
                     }
                     else {
                         description = 'TODO: add description';
