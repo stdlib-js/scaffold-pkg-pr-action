@@ -1,6 +1,6 @@
 {
     "name": "scaffold-pkg-pr-action",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "A GitHub action for creating a pull request with scaffolded package contents based off a comment.",
     "main": "dist/index.js",
     "scripts": {
