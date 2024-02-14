@@ -14,24 +14,24 @@
     },
     "license": "Apache-2.0",
     "dependencies": {
-        "@actions/core": "^1.10.0",
-        "@actions/github": "^5.1.1",
-        "@stdlib/assert-contains": "^0.0.7",
-        "@stdlib/string-constantcase": "^0.0.4",
-        "@stdlib/string-replace": "^0.0.11",
-        "@stdlib/string-substring-after": "^0.0.2",
-        "@stdlib/string-trim": "^0.0.9",
-        "@stdlib/time-current-year": "^0.0.2",
-        "openai": "^3.1.0",
-        "p-retry": "^4.6.2",
-        "yaml": "^2.2.1"
+        "@actions/core": "^1.10.1",
+        "@actions/github": "^6.0.0",
+        "@stdlib/assert-contains": "^0.2.0",
+        "@stdlib/string-constantcase": "^0.2.0",
+        "@stdlib/string-replace": "^0.2.0",
+        "@stdlib/string-substring-after": "^0.2.0",
+        "@stdlib/string-trim": "^0.2.0",
+        "@stdlib/time-current-year": "^0.2.0",
+        "openai": "^3.3.0",
+        "p-retry": "^6.2.0",
+        "yaml": "^2.3.4"
     },
     "devDependencies": {
-        "@types/node": "^18.11.18",
-        "@typescript-eslint/eslint-plugin": "^5.50.0",
-        "@typescript-eslint/parser": "^5.50.0",
-        "eslint": "^8.33.0",
-        "husky": "^8.0.3",
-        "typescript": "^4.9.5"
+        "@types/node": "^20.11.17",
+        "@typescript-eslint/eslint-plugin": "^7.0.1",
+        "@typescript-eslint/parser": "^7.0.1",
+        "eslint": "^8.56.0",
+        "husky": "^9.0.11",
+        "typescript": "^5.3.3"
     }
 }
